@@ -1,0 +1,17 @@
+---
+description: 
+globs: *.tsx
+alwaysApply: false
+---
+### Guidelines for React
+
+- Use functional components with hooks instead of class components
+- Never use "use client" and other Next.js directives as we use React with Astro
+- Implement React.memo() for expensive components that render often with the same props
+- Utilize React.lazy() and Suspense for code-splitting and performance optimization
+- Use the useCallback hook for event handlers passed to child components to prevent unnecessary re-renders
+- Prefer useMemo for expensive calculations to avoid recomputation on every render
+- Implement useId() for generating unique IDs for accessibility attributes
+- Consider using the new useOptimistic hook for optimistic UI updates in forms
+- Use useTransition for non-urgent state updates to keep the UI responsive
+
