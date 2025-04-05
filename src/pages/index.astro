@@ -1,8 +1,8 @@
 ---
-import Welcome from "../components/Welcome.astro";
+import { WelcomeCard } from "../components/WelcomeCard";
 import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout>
-  <Welcome />
+  <WelcomeCard client:load />
 </Layout>

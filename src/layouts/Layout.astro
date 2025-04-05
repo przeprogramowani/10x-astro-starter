@@ -1,11 +1,14 @@
 ---
 import "../styles/global.css";
+import { MainNavigation } from "@/components/MainNavigation";
+import { defaultNavigation, type NavigationConfig } from "@/config/navigation";
 
 interface Props {
   title?: string;
+  navigation?: NavigationConfig;
 }
 
-const { title = "10x Astro Starter" } = Astro.props;
+const { title = "10x Astro Starter", navigation = defaultNavigation } = Astro.props;
 ---
 
 <!doctype html>
@@ -17,8 +20,24 @@ const { title = "10x Astro Starter" } = Astro.props;
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
   </head>
-  <body>
-    <slot />
+  <body class="bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900">
+    <header class="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/30">
+      <div class="container flex h-14 items-center">
+        {
+          navigation.logo && (
+            <a href="/" class="mr-6 flex items-center space-x-2  font-bold">
+              <navigation.logo.icon size={navigation.logo.size} />
+              <span class="font-bold hidden sm:inline-block">{title}</span>
+            </a>
+          )
+        }
+        <MainNavigation client:load config={navigation} />
+      </div>
+    </header>
+    <div class="pt-12"></div>
+    <main class="container">
+      <slot />
+    </main>
   </body>
 </html>
 
@@ -28,5 +47,11 @@ const { title = "10x Astro Starter" } = Astro.props;
     margin: 0;
     width: 100%;
     height: 100%;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
   }
 </style>
