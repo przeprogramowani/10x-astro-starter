@@ -1,93 +1,90 @@
-# 10x Astro Starter
+# 10x-cards
 
-A modern, opinionated starter template for building fast, accessible, and AI-friendly web applications.
+![version](https://img.shields.io/badge/version-0.0.1-blue)
+![node](https://img.shields.io/badge/node-22.14.0-43853d)
+![license](https://img.shields.io/badge/license-MIT-green)
+
+AI-assisted flashcard creation and learning for faster study workflows.
+
+## Project Description
+
+10x-cards is a web application that helps users create and manage educational flashcards quickly. Users can paste a text passage (1,000 to 10,000 characters) and get AI-generated flashcard suggestions, then review, accept, edit, or reject them before saving. The app also supports manual flashcard creation, editing, and deletion, user accounts with authentication, and learning sessions powered by an external spaced-repetition algorithm. It tracks how many AI-generated flashcards are accepted, and aims to keep user data private and GDPR-compliant.
+
+Additional documentation:
+- [Product requirements (PRD)](.ai/prd.md)
+- [Tech stack details](.ai/tech-stack.md)
+
+## Table of Contents
+
+- [Project Description](#project-description)
+- [Tech Stack](#tech-stack)
+- [Getting Started Locally](#getting-started-locally)
+- [Available Scripts](#available-scripts)
+- [Project Scope](#project-scope)
+- [Project Status](#project-status)
+- [License](#license)
 
 ## Tech Stack
 
-- [Astro](https://astro.build/) v5.5.5 - Modern web framework for building fast, content-focused websites
-- [React](https://react.dev/) v19.0.0 - UI library for building interactive components
-- [TypeScript](https://www.typescriptlang.org/) v5 - Type-safe JavaScript
-- [Tailwind CSS](https://tailwindcss.com/) v4.0.17 - Utility-first CSS framework
+- Frontend: Astro 5, React 19, TypeScript 5, Tailwind CSS 4, Shadcn/ui
+- Backend: Supabase (PostgreSQL database, authentication)
+- AI: OpenRouter.ai (LLM access)
+- Tooling: ESLint, Prettier, Husky, lint-staged
 
-## Prerequisites
+## Getting Started Locally
 
-- Node.js v22.14.0 (as specified in `.nvmrc`)
-- npm (comes with Node.js)
+Prerequisites:
+- Node.js 22.14.0 (from `.nvmrc`)
+- npm
 
-## Getting Started
-
-1. Clone the repository:
-
+Setup:
 ```bash
-git clone https://github.com/przeprogramowani/10x-astro-starter.git
-cd 10x-astro-starter
-```
-
-2. Install dependencies:
-
-```bash
+git clone git@github.com:Nefryt/10x-cards.git
+cd 10x-cards
 npm install
-```
-
-3. Run the development server:
-
-```bash
 npm run dev
-```
-
-4. Build for production:
-
-```bash
-npm run build
 ```
 
 ## Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
+- `npm run dev` - Start the Astro development server
+- `npm run build` - Build the production site
+- `npm run preview` - Preview the production build locally
+- `npm run astro` - Run the Astro CLI
 - `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues
+- `npm run lint:fix` - Fix ESLint issues automatically
+- `npm run format` - Format files with Prettier
 
-## Project Structure
+## Project Scope
 
-```md
-.
-├── src/
-│   ├── layouts/    # Astro layouts
-│   ├── pages/      # Astro pages
-│   │   └── api/    # API endpoints
-│   ├── components/ # UI components (Astro & React)
-│   └── assets/     # Static assets
-├── public/         # Public assets
-```
+In scope (MVP):
+- AI-generated flashcards from pasted text
+- Review flow to accept, edit, or reject generated flashcards
+- Manual flashcard creation and a "My flashcards" list
+- Edit and delete existing flashcards with confirmation
+- User registration/login and access control per user
+- Spaced-repetition learning session using an external algorithm
+- Tracking how many AI suggestions are generated and accepted
+- GDPR-compliant storage and right-to-delete support
 
-## AI Development Support
+Out of scope (MVP):
+- Custom spaced-repetition algorithm
+- Gamification
+- Mobile applications
+- Document imports (PDF, DOCX, etc.)
+- Public API
+- Sharing flashcards between users
+- Advanced notification system
+- Advanced keyword search
 
-This project is configured with AI development tools to enhance the development experience, providing guidelines for:
+Success metrics:
+- 75% of AI-generated flashcards are accepted by users
+- At least 75% of newly added flashcards are AI-generated
+- Track generated vs accepted counts for engagement analysis
 
-- Project structure
-- Coding practices
-- Frontend development
-- Styling with Tailwind
-- Accessibility best practices
-- Astro and React guidelines
+## Project Status
 
-### Cursor IDE
-
-The project includes AI rules in `.cursor/rules/` directory that help Cursor IDE understand the project structure and provide better code suggestions.
-
-### GitHub Copilot
-
-AI instructions for GitHub Copilot are available in `.github/copilot-instructions.md`
-
-### Windsurf
-
-The `.windsurfrules` file contains AI configuration for Windsurf.
-
-## Contributing
-
-Please follow the AI guidelines and coding practices defined in the AI configuration files when contributing to this project.
+Early development with MVP scope defined in the PRD. Current version: 0.0.1.
 
 ## License
 
