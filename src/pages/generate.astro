@@ -1,0 +1,20 @@
+---
+import Layout from '../layouts/Layout.astro';
+import GenerateView from '../components/GenerateView';
+
+// Session should be set by middleware
+const { user } = Astro.locals;
+
+// For development - no login required
+// if (!user) {
+//   return Astro.redirect('/login');
+// }
+---
+
+<Layout title="Generuj fiszki | 10x-cards">
+  <GenerateView 
+    client:load 
+    userId={user?.id || ''} 
+    userEmail={user?.email || ''} 
+  />
+</Layout>

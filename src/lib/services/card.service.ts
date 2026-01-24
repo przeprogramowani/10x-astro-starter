@@ -58,19 +58,21 @@ export async function createCard(
  * @param cardsData - Array of card data to insert
  * @param userId - ID of the user creating the cards
  * @param supabase - Supabase client instance
+ * @param source - Source of the cards ('manual' or 'ai'), defaults to 'manual'
  * @returns Array of created card entities
  * @throws Error if database operation fails
  */
 export async function createCards(
   cardsData: CreateCardCommand[],
   userId: string,
-  supabase: SupabaseClientType
+  supabase: SupabaseClientType,
+  source: "manual" | "ai" = "manual"
 ): Promise<CardEntity[]> {
   const insertData: CardInsertEntity[] = cardsData.map((card) => ({
     user_id: userId,
     front: card.front,
     back: card.back,
-    source: "manual",
+    source: source,
     repetitions: 0,
   }));
 

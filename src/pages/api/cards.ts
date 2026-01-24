@@ -131,7 +131,10 @@ export const GET: APIRoute = async ({ url, locals }) => {
 
 /**
  * POST /api/cards
- * Creates one or more new flashcards manually
+ * Creates one or more new flashcards manually or from AI generation
+ *
+ * Query parameters:
+ * - source (optional): 'manual' (default) or 'ai'
  *
  * Request body: Array of card objects
  * - front: string (1-200 characters)
@@ -143,7 +146,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
  * - 401 Unauthorized: Missing or invalid authentication (handled by middleware)
  * - 500 Internal Server Error: Unexpected error
  */
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ request, url, locals }) => {
   try {
     // Step 1: Verify authentication (user should be set by middleware)
     const { user, supabase } = locals;
@@ -162,6 +165,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     const userId = user.id;
+
+    // Get source from query parameter (default to 'manual')
+    const sourceParam = url.searchParams.get("source");
+    const source: "manual" | "ai" = sourceParam === "ai" ? "ai" : "manual";
 
     // Step 2: Parse and validate request body
     let requestBody: unknown;
@@ -213,12 +220,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Step 4: Create cards in database
     let createdCards: CardDTO[];
     try {
-      createdCards = await createCards(validated, userId, supabase);
+      createdCards = await createCards(validated, userId, supabase, source);
     } catch (error) {
       console.error("Database error creating cards:", {
         error: error instanceof Error ? error.message : "Unknown error",
         user_id: userId,
         cards_count: validated.length,
+        source: source,
         timestamp: new Date().toISOString(),
       });
 
@@ -234,24 +242,27 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
 
-    // Step 5: Log card_created_manual events for each card (non-blocking)
-    // Create events in parallel but don't wait for all to complete
-    const eventPromises = createdCards.map((card) =>
-      createCardCreatedManualEvent(card.id, userId, supabase).catch((error) => {
-        // Log error but don't fail the request
-        console.error("Failed to create card_created_manual event:", {
-          error: error instanceof Error ? error.message : "Unknown error",
-          card_id: card.id,
-          user_id: userId,
-          timestamp: new Date().toISOString(),
-        });
-      })
-    );
+    // Step 5: Log events for each card (non-blocking)
+    // Only log card_created_manual events for manual cards
+    if (source === "manual") {
+      // Create events in parallel but don't wait for all to complete
+      const eventPromises = createdCards.map((card) =>
+        createCardCreatedManualEvent(card.id, userId, supabase).catch((error) => {
+          // Log error but don't fail the request
+          console.error("Failed to create card_created_manual event:", {
+            error: error instanceof Error ? error.message : "Unknown error",
+            card_id: card.id,
+            user_id: userId,
+            timestamp: new Date().toISOString(),
+          });
+        })
+      );
 
-    // Fire and forget - don't wait for events to complete
-    Promise.all(eventPromises).catch(() => {
-      // Silently handle any errors
-    });
+      // Fire and forget - don't wait for events to complete
+      Promise.all(eventPromises).catch(() => {
+        // Silently handle any errors
+      });
+    }
 
     // Step 6: Return created cards
     // For single card, return the card object directly
