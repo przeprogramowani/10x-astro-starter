@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
+import { mapSupabaseError } from "@/lib/errors";
 
 /**
  * LoginForm Component
@@ -17,25 +18,6 @@ export default function LoginForm() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  /**
-   * Mapowanie błędów Supabase na przyjazne komunikaty w języku polskim
-   */
-  const mapSupabaseError = (error: { message: string }): string => {
-    const errorMessage = error.message.toLowerCase();
-
-    if (errorMessage.includes("invalid login credentials")) {
-      return "Nieprawidłowy email lub hasło";
-    }
-    if (errorMessage.includes("email not confirmed")) {
-      return "Potwierdź swój adres email przed zalogowaniem";
-    }
-    if (errorMessage.includes("network") || errorMessage.includes("connection")) {
-      return "Brak połączenia z internetem";
-    }
-
-    return "Wystąpił błąd. Spróbuj ponownie";
-  };
 
   /**
    * Obsługa submitu formularza
