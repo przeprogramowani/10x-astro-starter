@@ -3,16 +3,15 @@ import Layout from "../layouts/Layout.astro";
 import ChangePasswordForm from "../components/ChangePasswordForm";
 import DeleteAccountButton from "../components/DeleteAccountButton";
 
-// TODO: Backend - Sprawdzenie sesji użytkownika
-// const { user } = Astro.locals;
-//
-// // Ochrona strony - wymaga zalogowania
-// if (!user) {
-//   return Astro.redirect('/login');
-// }
+const { user } = Astro.locals;
 
-// Placeholder dane użytkownika dla UI
-const userEmail = "user@example.com";
+// Ochrona strony - wymaga zalogowania
+if (!user || !user.email) {
+  return Astro.redirect('/login');
+}
+
+// Dane użytkownika dla UI
+const userEmail = user.email;
 ---
 
 <Layout title="Profil - 10x-cards">
@@ -48,7 +47,7 @@ const userEmail = "user@example.com";
         <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">
           Zmień hasło aby zwiększyć bezpieczeństwo swojego konta
         </p>
-        <ChangePasswordForm client:load />
+        <ChangePasswordForm client:load userEmail={userEmail} />
       </div>
 
       {/* Sekcja: Usuwanie konta */}

@@ -1,10 +1,12 @@
 import type { AstroCookies } from "astro";
 import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 
 import type { Database } from "../db/database.types.ts";
 
 const supabaseUrl = import.meta.env.SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.SUPABASE_KEY;
+const supabaseServiceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing required Supabase environment variables");
@@ -55,4 +57,22 @@ export const createSupabaseServerInstance = (context: { headers: Headers; cookie
   });
 
   return supabase;
+};
+
+/**
+ * Create Supabase admin client with service role key
+ * This client has elevated privileges and should only be used for admin operations
+ * WARNING: Never expose this client to the frontend
+ */
+export const createSupabaseAdminClient = () => {
+  if (!supabaseServiceRoleKey) {
+    throw new Error("SUPABASE_SERVICE_ROLE_KEY is not configured");
+  }
+
+  return createClient<Database>(supabaseUrl, supabaseServiceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
 };

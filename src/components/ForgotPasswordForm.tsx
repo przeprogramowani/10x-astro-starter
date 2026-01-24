@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
+import { authClient } from "@/db/auth.client";
 
 /**
  * ForgotPasswordForm Component
  *
  * Formularz do odzyskiwania hasła. Przyjmuje email użytkownika i wysyła
- * link resetujący hasło. W przyszłości wywoła API Supabase.
+ * link resetujący hasło przez Supabase Auth API.
  */
 export default function ForgotPasswordForm() {
   // Stan formularza
@@ -19,7 +20,7 @@ export default function ForgotPasswordForm() {
 
   /**
    * Obsługa submitu formularza
-   * TODO: Zintegrować z Supabase Auth API (authClient.auth.resetPasswordForEmail)
+   * Wysyła email z linkiem resetującym hasło
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,28 +39,25 @@ export default function ForgotPasswordForm() {
     setIsLoading(true);
 
     try {
-      // TODO: Backend integration
-      // const { error: resetError } = await authClient.auth.resetPasswordForEmail(email, {
-      //   redirectTo: `${window.location.origin}/reset-password`
-      // });
-      //
-      // if (resetError) {
-      //   setError("Brak połączenia z internetem");
-      //   setIsLoading(false);
-      //   return;
-      // }
-      //
-      // // Sukces - zawsze wyświetl komunikat (security best practice)
-      // setSuccess(true);
-      // setIsLoading(false);
+      // Wysłanie emaila z linkiem resetującym
+      const { error: resetError } = await authClient.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`
+      });
 
-      // Placeholder - symulacja opóźnienia
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log("Password reset request for:", email);
+      if (resetError) {
+        console.error("Password reset error:", resetError);
+        setError("Nie udało się wysłać emaila. Spróbuj ponownie");
+        setIsLoading(false);
+        return;
+      }
+
+      // Sukces - zawsze wyświetl komunikat (security best practice)
+      // Nie ujawniamy czy konto istnieje
       setSuccess(true);
       setIsLoading(false);
     } catch (err) {
       // Obsługa nieoczekiwanych błędów
+      console.error("Unexpected error:", err);
       setError("Wystąpił błąd. Spróbuj ponownie");
       setIsLoading(false);
     }

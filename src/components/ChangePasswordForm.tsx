@@ -3,15 +3,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
+import { authClient } from "@/db/auth.client";
+
+interface ChangePasswordFormProps {
+  userEmail: string;
+}
 
 /**
  * ChangePasswordForm Component
  *
  * Formularz do zmiany hasła dla zalogowanego użytkownika.
  * Wymaga wpisania obecnego hasła, nowego hasła i potwierdzenia.
- * W przyszłości wywoła API Supabase do weryfikacji i aktualizacji hasła.
+ * Weryfikuje obecne hasło przez re-autentykację i aktualizuje hasło przez Supabase Auth API.
  */
-export default function ChangePasswordForm() {
+export default function ChangePasswordForm({ userEmail }: ChangePasswordFormProps) {
   // Stan formularza
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -49,9 +54,8 @@ export default function ChangePasswordForm() {
 
   /**
    * Obsługa submitu formularza
-   * TODO: Zintegrować z Supabase Auth API
-   * 1. Weryfikacja obecnego hasła: authClient.auth.signInWithPassword()
-   * 2. Aktualizacja hasła: authClient.auth.updateUser({ password })
+   * 1. Weryfikacja obecnego hasła przez re-autentykację
+   * 2. Aktualizacja hasła przez Supabase Auth API
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,41 +73,32 @@ export default function ChangePasswordForm() {
     setIsLoading(true);
 
     try {
-      // TODO: Backend integration
-      // // Krok 1: Weryfikacja obecnego hasła (re-authentication)
-      // const userEmail = 'user@example.com'; // TODO: Pobierz z context/props
-      // const { error: verifyError } = await authClient.auth.signInWithPassword({
-      //   email: userEmail,
-      //   password: currentPassword
-      // });
-      //
-      // if (verifyError) {
-      //   setError("Nieprawidłowe obecne hasło");
-      //   setIsLoading(false);
-      //   return;
-      // }
-      //
-      // // Krok 2: Aktualizacja hasła
-      // const { error: updateError } = await authClient.auth.updateUser({
-      //   password: newPassword
-      // });
-      //
-      // if (updateError) {
-      //   setError("Wystąpił błąd podczas zmiany hasła");
-      //   setIsLoading(false);
-      //   return;
-      // }
-      //
-      // // Sukces
-      // setSuccess(true);
-      // setCurrentPassword("");
-      // setNewPassword("");
-      // setConfirmPassword("");
-      // setIsLoading(false);
+      // Krok 1: Weryfikacja obecnego hasła (re-authentication)
+      const { error: verifyError } = await authClient.auth.signInWithPassword({
+        email: userEmail,
+        password: currentPassword
+      });
 
-      // Placeholder - symulacja opóźnienia
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log("Password change attempt");
+      if (verifyError) {
+        console.error("Current password verification error:", verifyError);
+        setError("Nieprawidłowe obecne hasło");
+        setIsLoading(false);
+        return;
+      }
+
+      // Krok 2: Aktualizacja hasła
+      const { error: updateError } = await authClient.auth.updateUser({
+        password: newPassword
+      });
+
+      if (updateError) {
+        console.error("Password update error:", updateError);
+        setError("Wystąpił błąd podczas zmiany hasła. Spróbuj ponownie");
+        setIsLoading(false);
+        return;
+      }
+
+      // Sukces
       setSuccess(true);
       setCurrentPassword("");
       setNewPassword("");
@@ -111,6 +106,7 @@ export default function ChangePasswordForm() {
       setIsLoading(false);
     } catch (err) {
       // Obsługa nieoczekiwanych błędów
+      console.error("Unexpected error:", err);
       setError("Wystąpił błąd. Spróbuj ponownie");
       setIsLoading(false);
     }

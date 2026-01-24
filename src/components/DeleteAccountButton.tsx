@@ -8,8 +8,8 @@ import { Loader2, AlertTriangle } from "lucide-react";
  * DeleteAccountButton Component
  *
  * Przycisk do usuwania konta użytkownika z modalem potwierdzenia.
- * Wymaga wpisania tekstu potwierdzającego "USUŃ KONTO" i hasła.
- * W przyszłości wywoła endpoint API DELETE /api/users/me.
+ * Wymaga wpisania tekstu potwierdzającego "USUŃ KONTO".
+ * Wywołuje endpoint API DELETE /api/users/me.
  *
  * WYMAGANE zgodnie z RODO (prawo do usunięcia danych osobowych).
  */
@@ -17,7 +17,6 @@ export default function DeleteAccountButton() {
   // Stan modala
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [confirmText, setConfirmText] = useState("");
-  const [password, setPassword] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,7 +27,6 @@ export default function DeleteAccountButton() {
     setIsModalOpen(true);
     setError(null);
     setConfirmText("");
-    setPassword("");
   };
 
   /**
@@ -39,7 +37,6 @@ export default function DeleteAccountButton() {
       setIsModalOpen(false);
       setError(null);
       setConfirmText("");
-      setPassword("");
     }
   };
 
@@ -52,17 +49,12 @@ export default function DeleteAccountButton() {
       return false;
     }
 
-    if (!password) {
-      setError("Wpisz hasło aby potwierdzić usunięcie konta");
-      return false;
-    }
-
     return true;
   };
 
   /**
    * Obsługa usuwania konta
-   * TODO: Zintegrować z API endpoint DELETE /api/users/me
+   * Wywołuje DELETE /api/users/me
    */
   const handleDelete = async () => {
     // Wyczyść poprzednie błędy
@@ -77,42 +69,40 @@ export default function DeleteAccountButton() {
     setIsDeleting(true);
 
     try {
-      // TODO: Backend integration
-      // const response = await fetch('/api/users/me', {
-      //   method: 'DELETE',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ password })
-      // });
-      //
-      // if (!response.ok) {
-      //   const data = await response.json();
-      //   if (data.error === 'Invalid password') {
-      //     setError("Nieprawidłowe hasło");
-      //   } else {
-      //     setError("Nie udało się usunąć konta. Spróbuj ponownie");
-      //   }
-      //   setIsDeleting(false);
-      //   return;
-      // }
-      //
-      // // Sukces - wylogowanie i przekierowanie
-      // alert("Konto zostało usunięte");
-      // window.location.href = "/";
+      // Wywołanie API endpoint DELETE /api/users/me
+      // Autentykacja odbywa się automatycznie przez session cookies (Supabase)
+      const response = await fetch("/api/users/me", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
 
-      // Placeholder - symulacja opóźnienia
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log("Account deletion attempt");
-      setIsDeleting(false);
-      alert("Backend nie jest jeszcze zaimplementowany. Konto nie zostało usunięte.");
-      closeModal();
-    } catch (err) {
-      // Obsługa nieoczekiwanych błędów
-      setError("Brak połączenia z internetem");
+      if (!response.ok) {
+        const data = await response.json();
+
+        // Obsługa błędu 401 - brak autentykacji
+        if (response.status === 401) {
+          setError("Sesja wygasła. Zaloguj się ponownie.");
+          setIsDeleting(false);
+          return;
+        }
+
+        // Obsługa innych błędów (500, itp.)
+        setError(data.message || "Nie udało się usunąć konta. Spróbuj ponownie.");
+        setIsDeleting(false);
+        return;
+      }
+
+      // Sukces - przekierowanie na stronę główną
+      // Użytkownik zostanie automatycznie wylogowany (sesja usunięta)
+      window.location.href = "/";
+    } catch {
+      // Obsługa nieoczekiwanych błędów (np. brak połączenia)
+      setError("Wystąpił błąd połączenia. Sprawdź internet i spróbuj ponownie.");
       setIsDeleting(false);
     }
   };
 
-  const isConfirmationValid = confirmText === "USUŃ KONTO" && password !== "";
+  const isConfirmationValid = confirmText === "USUŃ KONTO";
 
   return (
     <>
@@ -124,16 +114,30 @@ export default function DeleteAccountButton() {
 
       {/* Modal potwierdzenia */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={closeModal}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={(e) => {
+            // Zamknij tylko jeśli kliknięto na overlay (nie na dialog)
+            if (e.target === e.currentTarget) {
+              closeModal();
+            }
+          }}
+          onKeyDown={(e) => e.key === "Escape" && closeModal()}
+          role="presentation"
+        >
           <div
             className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6 max-w-md w-full"
-            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-account-title"
           >
             {/* Nagłówek */}
             <div className="flex items-start space-x-3 mb-4">
               <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
               <div>
-                <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Usuń konto</h2>
+                <h2 id="delete-account-title" className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                  Usuń konto
+                </h2>
                 <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
                   Ta operacja jest nieodwracalna. Wszystkie Twoje fiszki oraz dane zostaną trwale usunięte.
                 </p>
@@ -165,21 +169,6 @@ export default function DeleteAccountButton() {
                   disabled={isDeleting}
                   placeholder="USUŃ KONTO"
                   className="w-full font-mono"
-                />
-              </div>
-
-              {/* Pole hasła */}
-              <div className="space-y-2">
-                <Label htmlFor="password">Twoje hasło</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={isDeleting}
-                  autoComplete="current-password"
-                  placeholder="Wpisz hasło"
-                  className="w-full"
                 />
               </div>
             </div>

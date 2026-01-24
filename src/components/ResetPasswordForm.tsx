@@ -1,25 +1,50 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
-
-interface ResetPasswordFormProps {
-  token: string; // Token z URL przekazany z Astro
-}
+import { authClient } from "@/db/auth.client";
 
 /**
  * ResetPasswordForm Component
  *
- * Formularz do ustawiania nowego hasła. Przyjmuje token resetowania z URL
- * i pozwala użytkownikowi ustawić nowe hasło. W przyszłości wywoła API Supabase.
+ * Formularz do ustawiania nowego hasła. Supabase automatycznie obsługuje
+ * token z URL (fragment #access_token) i loguje użytkownika.
+ * Ten komponent pozwala użytkownikowi ustawić nowe hasło.
  */
-export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
+export default function ResetPasswordForm() {
   // Stan formularza
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isVerifying, setIsVerifying] = useState(true);
+
+  /**
+   * Weryfikacja sesji przy montowaniu komponentu
+   * Sprawdza czy użytkownik został zalogowany (token był ważny)
+   */
+  useEffect(() => {
+    const verifySession = async () => {
+      try {
+        const { data: { session }, error: sessionError } = await authClient.auth.getSession();
+        
+        if (sessionError || !session) {
+          // Brak sesji - token był nieważny lub wygasł
+          window.location.href = "/forgot-password?error=" + encodeURIComponent("Link wygasł lub jest nieważny");
+          return;
+        }
+        
+        // Sesja jest ważna, można zmienić hasło
+        setIsVerifying(false);
+      } catch (err) {
+        console.error("Session verification error:", err);
+        window.location.href = "/forgot-password";
+      }
+    };
+
+    verifySession();
+  }, []);
 
   /**
    * Walidacja haseł
@@ -40,7 +65,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
   /**
    * Obsługa submitu formularza
-   * TODO: Zintegrować z Supabase Auth API (authClient.auth.updateUser)
+   * Aktualizuje hasło użytkownika przez Supabase Auth API
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,36 +82,44 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
     setIsLoading(true);
 
     try {
-      // TODO: Backend integration
-      // const { data, error: updateError } = await authClient.auth.updateUser({
-      //   password: password
-      // });
-      //
-      // if (updateError) {
-      //   if (updateError.message.includes('token') || updateError.message.includes('expired')) {
-      //     setError("Link resetowania hasła wygasł. Wygeneruj nowy");
-      //   } else {
-      //     setError("Wystąpił błąd. Spróbuj ponownie");
-      //   }
-      //   setIsLoading(false);
-      //   return;
-      // }
-      //
-      // // Sukces - wyświetl alert i przekieruj do logowania
-      // alert("Hasło zostało zmienione. Możesz się teraz zalogować");
-      // window.location.href = "/login";
+      // Aktualizacja hasła
+      const { error: updateError } = await authClient.auth.updateUser({
+        password: password
+      });
 
-      // Placeholder - symulacja opóźnienia
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log("Password reset for token:", token);
-      setIsLoading(false);
-      alert("Backend nie jest jeszcze zaimplementowany. Token: " + token);
+      if (updateError) {
+        console.error("Password update error:", updateError);
+        
+        if (updateError.message.includes('token') || updateError.message.includes('expired')) {
+          setError("Sesja wygasła. Wygeneruj nowy link resetujący");
+          setIsLoading(false);
+          return;
+        }
+        
+        setError("Wystąpił błąd podczas zmiany hasła. Spróbuj ponownie");
+        setIsLoading(false);
+        return;
+      }
+
+      // Sukces - przekieruj do logowania z komunikatem
+      window.location.href = "/login?message=" + encodeURIComponent("Hasło zostało zmienione. Zaloguj się");
     } catch (err) {
       // Obsługa nieoczekiwanych błędów
+      console.error("Unexpected error:", err);
       setError("Wystąpił błąd. Spróbuj ponownie");
       setIsLoading(false);
     }
   };
+
+  // Wyświetl loader podczas weryfikacji sesji
+  if (isVerifying) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="ml-3 text-sm text-slate-600 dark:text-slate-400">Weryfikacja linku...</p>
+      </div>
+    );
+  }
 
   // Sprawdzenie czy formularz jest prawidłowy
   const isFormValid = password !== "" && confirmPassword !== "" && password === confirmPassword;
