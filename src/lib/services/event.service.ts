@@ -79,3 +79,75 @@ export async function createAIGenerationEvent(
     supabase
   );
 }
+
+/**
+ * Creates a card created manually event
+ * Helper function for logging manual card creation
+ * @param cardId - ID of the created card
+ * @param userId - ID of the user
+ * @param supabase - Supabase client instance
+ * @returns The created event entity
+ */
+export async function createCardCreatedManualEvent(
+  cardId: string,
+  userId: string,
+  supabase: SupabaseClientType
+): Promise<EventEntity> {
+  return createEvent(
+    {
+      event_type: "card_created_manual",
+      card_id: cardId,
+      metadata: null,
+    },
+    userId,
+    supabase
+  );
+}
+
+/**
+ * Creates a card edited event
+ * Helper function for logging card edits
+ * @param cardId - ID of the edited card
+ * @param userId - ID of the user
+ * @param supabase - Supabase client instance
+ * @returns The created event entity
+ */
+export async function createCardEditedEvent(
+  cardId: string,
+  userId: string,
+  supabase: SupabaseClientType
+): Promise<EventEntity> {
+  return createEvent(
+    {
+      event_type: "card_edited",
+      card_id: cardId,
+      metadata: null,
+    },
+    userId,
+    supabase
+  );
+}
+
+/**
+ * Creates a card deleted event
+ * Helper function for logging card deletions
+ * @param cardId - ID of the deleted card
+ * @param userId - ID of the user
+ * @param supabase - Supabase client instance
+ * @returns The created event entity
+ */
+export async function createCardDeletedEvent(
+  cardId: string,
+  userId: string,
+  supabase: SupabaseClientType
+): Promise<EventEntity> {
+  return createEvent(
+    {
+      event_type: "card_deleted",
+      card_id: cardId,
+      metadata: null,
+    },
+    userId,
+    supabase
+  );
+}
