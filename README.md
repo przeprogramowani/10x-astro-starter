@@ -11,6 +11,7 @@ AI-assisted flashcard creation and learning for faster study workflows.
 10x-cards is a web application that helps users create and manage educational flashcards quickly. Users can paste a text passage (1,000 to 10,000 characters) and get AI-generated flashcard suggestions, then review, accept, edit, or reject them before saving. The app also supports manual flashcard creation, editing, and deletion, user accounts with authentication, and learning sessions powered by an external spaced-repetition algorithm. It tracks how many AI-generated flashcards are accepted, and aims to keep user data private and GDPR-compliant.
 
 Additional documentation:
+
 - [Product requirements (PRD)](.ai/prd.md)
 - [Tech stack details](.ai/tech-stack.md)
 
@@ -34,10 +35,12 @@ Additional documentation:
 ## Getting Started Locally
 
 Prerequisites:
+
 - Node.js 22.14.0 (from `.nvmrc`)
 - npm
 
 Setup:
+
 ```bash
 git clone git@github.com:Nefryt/10x-cards.git
 cd 10x-cards
@@ -58,6 +61,7 @@ npm run dev
 ## Project Scope
 
 In scope (MVP):
+
 - AI-generated flashcards from pasted text
 - Review flow to accept, edit, or reject generated flashcards
 - Manual flashcard creation and a "My flashcards" list
@@ -68,6 +72,7 @@ In scope (MVP):
 - GDPR-compliant storage and right-to-delete support
 
 Out of scope (MVP):
+
 - Custom spaced-repetition algorithm
 - Gamification
 - Mobile applications
@@ -78,6 +83,7 @@ Out of scope (MVP):
 - Advanced keyword search
 
 Success metrics:
+
 - 75% of AI-generated flashcards are accepted by users
 - At least 75% of newly added flashcards are AI-generated
 - Track generated vs accepted counts for engagement analysis

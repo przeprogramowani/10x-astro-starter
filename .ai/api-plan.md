@@ -21,14 +21,17 @@ Authentication is handled by Supabase Auth. The following operations are availab
 - **Get Session**: `supabase.auth.getSession()`
 
 All API endpoints below require authentication via Supabase session token in the `Authorization` header:
+
 ```
 Authorization: Bearer <access_token>
 ```
 
 #### DELETE /api/users/me
+
 Delete the authenticated user's account and all associated data.
 
 **Request Headers:**
+
 ```json
 {
   "Authorization": "Bearer <access_token>"
@@ -36,6 +39,7 @@ Delete the authenticated user's account and all associated data.
 ```
 
 **Response (Success - 200 OK):**
+
 ```json
 {
   "message": "Account and all associated data deleted successfully"
@@ -43,6 +47,7 @@ Delete the authenticated user's account and all associated data.
 ```
 
 **Error Responses:**
+
 - `401 Unauthorized`: Missing or invalid authentication token
 - `500 Internal Server Error`: Database error during deletion
 
@@ -51,9 +56,11 @@ Delete the authenticated user's account and all associated data.
 ### 2.2 Cards
 
 #### GET /api/cards
+
 Retrieve all flashcards for the authenticated user.
 
 **Query Parameters:**
+
 - `limit` (optional, default: 50, max: 100): Number of cards to return
 - `offset` (optional, default: 0): Number of cards to skip
 - `source` (optional): Filter by source (`manual` or `ai`)
@@ -61,6 +68,7 @@ Retrieve all flashcards for the authenticated user.
 - `order` (optional, default: `desc`): Sort order (`asc` or `desc`)
 
 **Request Headers:**
+
 ```json
 {
   "Authorization": "Bearer <access_token>"
@@ -68,6 +76,7 @@ Retrieve all flashcards for the authenticated user.
 ```
 
 **Response (Success - 200 OK):**
+
 ```json
 {
   "data": [
@@ -92,18 +101,22 @@ Retrieve all flashcards for the authenticated user.
 ```
 
 **Error Responses:**
+
 - `401 Unauthorized`: Missing or invalid authentication token
 - `400 Bad Request`: Invalid query parameters
 
 ---
 
 #### GET /api/cards/:id
+
 Retrieve a single flashcard by ID.
 
 **URL Parameters:**
+
 - `id`: Card UUID
 
 **Request Headers:**
+
 ```json
 {
   "Authorization": "Bearer <access_token>"
@@ -111,6 +124,7 @@ Retrieve a single flashcard by ID.
 ```
 
 **Response (Success - 200 OK):**
+
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
@@ -125,6 +139,7 @@ Retrieve a single flashcard by ID.
 ```
 
 **Error Responses:**
+
 - `401 Unauthorized`: Missing or invalid authentication token
 - `404 Not Found`: Card not found or doesn't belong to user
 - `400 Bad Request`: Invalid card ID format
@@ -132,9 +147,11 @@ Retrieve a single flashcard by ID.
 ---
 
 #### POST /api/cards
+
 Create one or more new flashcards manually.
 
 **Request Headers:**
+
 ```json
 {
   "Authorization": "Bearer <access_token>",
@@ -154,7 +171,8 @@ Send a JSON array of flashcard objects. For a single card, send an array with on
 ]
 ```
 
-*Multiple cards:*
+_Multiple cards:_
+
 ```json
 [
   {
@@ -168,12 +186,13 @@ Send a JSON array of flashcard objects. For a single card, send an array with on
 ]
 ```
 
-
 **Validation:**
+
 - `front`: Required, string, 1-200 characters
 - `back`: Required, string, 1-500 characters
 
 **Response (Success - 201 Created):**
+
 ```json
 {
   "id": "660e8400-e29b-41d4-a716-446655440000",
@@ -188,6 +207,7 @@ Send a JSON array of flashcard objects. For a single card, send an array with on
 ```
 
 **Error Responses:**
+
 - `401 Unauthorized`: Missing or invalid authentication token
 - `400 Bad Request`: Validation errors
   ```json
@@ -204,17 +224,21 @@ Send a JSON array of flashcard objects. For a single card, send an array with on
 - `500 Internal Server Error`: Database error
 
 **Side Effects:**
+
 - Creates an event of type `card_created_manual`
 
 ---
 
 #### PATCH /api/cards/:id
+
 Update an existing flashcard.
 
 **URL Parameters:**
+
 - `id`: Card UUID
 
 **Request Headers:**
+
 ```json
 {
   "Authorization": "Bearer <access_token>",
@@ -223,6 +247,7 @@ Update an existing flashcard.
 ```
 
 **Request Body (all fields optional):**
+
 ```json
 {
   "front": "What is TypeScript? (Updated)",
@@ -232,12 +257,14 @@ Update an existing flashcard.
 ```
 
 **Validation:**
+
 - `front`: Optional, string, 1-200 characters
 - `back`: Optional, string, 1-500 characters
 - `repetitions`: Optional, integer, >= 0
 - At least one field must be provided
 
 **Response (Success - 200 OK):**
+
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
@@ -252,24 +279,29 @@ Update an existing flashcard.
 ```
 
 **Error Responses:**
+
 - `401 Unauthorized`: Missing or invalid authentication token
 - `404 Not Found`: Card not found or doesn't belong to user
 - `400 Bad Request`: Validation errors or no fields provided
 - `500 Internal Server Error`: Database error
 
 **Side Effects:**
+
 - Creates an event of type `card_edited`
 - Updates `updated_at` timestamp automatically via database trigger
 
 ---
 
 #### DELETE /api/cards/:id
+
 Delete a flashcard.
 
 **URL Parameters:**
+
 - `id`: Card UUID
 
 **Request Headers:**
+
 ```json
 {
   "Authorization": "Bearer <access_token>"
@@ -277,6 +309,7 @@ Delete a flashcard.
 ```
 
 **Response (Success - 200 OK):**
+
 ```json
 {
   "message": "Card deleted successfully",
@@ -285,11 +318,13 @@ Delete a flashcard.
 ```
 
 **Error Responses:**
+
 - `401 Unauthorized`: Missing or invalid authentication token
 - `404 Not Found`: Card not found or doesn't belong to user
 - `500 Internal Server Error`: Database error
 
 **Side Effects:**
+
 - Creates an event of type `card_deleted`
 - Sets `card_id` to NULL in related events (ON DELETE SET NULL)
 
@@ -298,9 +333,11 @@ Delete a flashcard.
 ### 2.3 Generation Requests
 
 #### POST /api/generation-requests
+
 Generate flashcard suggestions from text using AI.
 
 **Request Headers:**
+
 ```json
 {
   "Authorization": "Bearer <access_token>",
@@ -309,6 +346,7 @@ Generate flashcard suggestions from text using AI.
 ```
 
 **Request Body:**
+
 ```json
 {
   "input_text": "React is a JavaScript library for building user interfaces. It was created by Facebook and is maintained by Facebook and a community of individual developers and companies. React can be used as a base in the development of single-page or mobile applications. However, React is only concerned with state management and rendering that state to the DOM, so creating React applications usually requires the use of additional libraries for routing and certain client-side functionality... [text continues to meet 1000-10000 character requirement]"
@@ -316,9 +354,11 @@ Generate flashcard suggestions from text using AI.
 ```
 
 **Validation:**
+
 - `input_text`: Required, string, 1000-10000 characters
 
 **Response (Success - 200 OK):**
+
 ```json
 {
   "generation_request_id": "aa0e8400-e29b-41d4-a716-446655440000",
@@ -350,6 +390,7 @@ Generate flashcard suggestions from text using AI.
 ```
 
 **Error Responses:**
+
 - `401 Unauthorized`: Missing or invalid authentication token
 - `400 Bad Request`: Validation errors
   ```json
@@ -381,6 +422,7 @@ Generate flashcard suggestions from text using AI.
 - `500 Internal Server Error`: Database or server error
 
 **Side Effects:**
+
 - Creates a `generation_request` record
 - Creates an event of type `ai_generation`
 - Consumes API credits with OpenRouter.ai
@@ -388,13 +430,16 @@ Generate flashcard suggestions from text using AI.
 ---
 
 #### GET /api/generation-requests
+
 Retrieve generation request history for the authenticated user.
 
 **Query Parameters:**
+
 - `limit` (optional, default: 20, max: 50): Number of requests to return
 - `offset` (optional, default: 0): Number of requests to skip
 
 **Request Headers:**
+
 ```json
 {
   "Authorization": "Bearer <access_token>"
@@ -402,6 +447,7 @@ Retrieve generation request history for the authenticated user.
 ```
 
 **Response (Success - 200 OK):**
+
 ```json
 {
   "data": [
@@ -424,18 +470,22 @@ Retrieve generation request history for the authenticated user.
 ```
 
 **Error Responses:**
+
 - `401 Unauthorized`: Missing or invalid authentication token
 - `400 Bad Request`: Invalid query parameters
 
 ---
 
 #### GET /api/generation-requests/:id
+
 Retrieve a single generation request by ID.
 
 **URL Parameters:**
+
 - `id`: Generation request UUID
 
 **Request Headers:**
+
 ```json
 {
   "Authorization": "Bearer <access_token>"
@@ -443,6 +493,7 @@ Retrieve a single generation request by ID.
 ```
 
 **Response (Success - 200 OK):**
+
 ```json
 {
   "id": "aa0e8400-e29b-41d4-a716-446655440000",
@@ -456,6 +507,7 @@ Retrieve a single generation request by ID.
 ```
 
 **Error Responses:**
+
 - `401 Unauthorized`: Missing or invalid authentication token
 - `404 Not Found`: Generation request not found or doesn't belong to user
 - `400 Bad Request`: Invalid request ID format
@@ -465,9 +517,11 @@ Retrieve a single generation request by ID.
 ### 2.4 Statistics
 
 #### GET /api/stats/cards
+
 Get statistics about the user's flashcards.
 
 **Request Headers:**
+
 ```json
 {
   "Authorization": "Bearer <access_token>"
@@ -475,6 +529,7 @@ Get statistics about the user's flashcards.
 ```
 
 **Response (Success - 200 OK):**
+
 ```json
 {
   "total_cards": 150,
@@ -495,15 +550,18 @@ Get statistics about the user's flashcards.
 ```
 
 **Error Responses:**
+
 - `401 Unauthorized`: Missing or invalid authentication token
 - `500 Internal Server Error`: Database error
 
 ---
 
 #### GET /api/stats/generation
+
 Get statistics about AI generation requests.
 
 **Request Headers:**
+
 ```json
 {
   "Authorization": "Bearer <access_token>"
@@ -511,6 +569,7 @@ Get statistics about AI generation requests.
 ```
 
 **Response (Success - 200 OK):**
+
 ```json
 {
   "total_requests": 25,
@@ -526,6 +585,7 @@ Get statistics about AI generation requests.
 ```
 
 **Error Responses:**
+
 - `401 Unauthorized`: Missing or invalid authentication token
 - `500 Internal Server Error`: Database error
 
@@ -548,35 +608,40 @@ The API uses **Supabase Auth** for authentication, which provides:
 **Client-Side Authentication Flow:**
 
 1. **Sign Up:**
+
    ```typescript
    const { data, error } = await supabase.auth.signUp({
-     email: 'user@example.com',
-     password: 'secure-password'
-   })
+     email: "user@example.com",
+     password: "secure-password",
+   });
    ```
 
 2. **Sign In:**
+
    ```typescript
    const { data, error } = await supabase.auth.signInWithPassword({
-     email: 'user@example.com',
-     password: 'secure-password'
-   })
+     email: "user@example.com",
+     password: "secure-password",
+   });
    ```
 
 3. **Get Session Token:**
+
    ```typescript
-   const { data: { session } } = await supabase.auth.getSession()
-   const accessToken = session?.access_token
+   const {
+     data: { session },
+   } = await supabase.auth.getSession();
+   const accessToken = session?.access_token;
    ```
 
 4. **Make Authenticated API Requests:**
    ```typescript
-   fetch('/api/cards', {
+   fetch("/api/cards", {
      headers: {
-       'Authorization': `Bearer ${accessToken}`,
-       'Content-Type': 'application/json'
-     }
-   })
+       Authorization: `Bearer ${accessToken}`,
+       "Content-Type": "application/json",
+     },
+   });
    ```
 
 **Server-Side Authentication:**
@@ -586,15 +651,18 @@ All API endpoints (except public endpoints like health checks) must validate the
 ```typescript
 // Middleware example
 async function authenticate(request: Request): Promise<User | null> {
-  const authHeader = request.headers.get('Authorization')
-  if (!authHeader?.startsWith('Bearer ')) {
-    return null
+  const authHeader = request.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return null;
   }
-  
-  const token = authHeader.substring(7)
-  const { data: { user }, error } = await supabase.auth.getUser(token)
-  
-  return error ? null : user
+
+  const token = authHeader.substring(7);
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token);
+
+  return error ? null : user;
 }
 ```
 
@@ -606,13 +674,10 @@ All user data is isolated by `user_id`. The API enforces the following rules:
 
 1. **Cards**: Users can only access their own cards
    - Filtered by `WHERE user_id = authenticated_user_id`
-   
 2. **Generation Requests**: Users can only access their own generation history
    - Filtered by `WHERE user_id = authenticated_user_id`
-   
 3. **Events**: Users can only trigger events for their own account
    - Automatically tagged with `user_id = authenticated_user_id`
-   
 4. **Statistics**: Users can only view their own statistics
    - Calculated only from their own data
 
@@ -656,7 +721,9 @@ CREATE POLICY "Users can only access their own events"
 ### 4.1 Validation Rules by Resource
 
 #### Cards
+
 **Front Field:**
+
 - Type: String
 - Required: Yes
 - Min Length: 1 character
@@ -664,6 +731,7 @@ CREATE POLICY "Users can only access their own events"
 - Error Message: "Front must be between 1 and 200 characters"
 
 **Back Field:**
+
 - Type: String
 - Required: Yes
 - Min Length: 1 character
@@ -671,19 +739,23 @@ CREATE POLICY "Users can only access their own events"
 - Error Message: "Back must be between 1 and 500 characters"
 
 **Repetitions Field:**
+
 - Type: Integer
 - Required: Yes (default: 0)
 - Min Value: 0
 - Error Message: "Repetitions must be a non-negative integer"
 
 **Source Field:**
+
 - Type: Enum
 - Required: Yes (auto-set by API)
 - Allowed Values: `manual`, `ai`
 - Error Message: "Source must be either 'manual' or 'ai'"
 
 #### Generation Requests
+
 **Input Text Field:**
+
 - Type: String
 - Required: Yes
 - Min Length: 1000 characters
@@ -691,13 +763,16 @@ CREATE POLICY "Users can only access their own events"
 - Error Message: "Input text must be between 1000 and 10000 characters"
 
 **Generated Count Field:**
+
 - Type: Integer
 - Required: Yes (auto-set by API)
 - Min Value: 0
 - Error Message: "Generated count must be a non-negative integer"
 
 #### Events
+
 **Event Type Field:**
+
 - Type: Enum
 - Required: Yes
 - Allowed Values: `login`, `ai_generation`, `card_accepted`, `card_rejected`, `card_edited`, `card_deleted`, `card_created_manual`
@@ -734,6 +809,7 @@ CREATE POLICY "Users can only access their own events"
    - Update generation_request statistics
 
 **Example AI Prompt:**
+
 ```
 Generate 5-10 flashcards from the following text. Each flashcard should have a clear question on the front and a concise answer on the back. Format the response as JSON array:
 
@@ -824,15 +900,18 @@ Text: {input_text}
 #### Statistics Calculation
 
 **Acceptance Rate:**
+
 ```
 acceptance_rate = (total_ai_cards_saved / total_ai_cards_generated) × 100
 ```
 
 Calculated from:
-- `cards` table: COUNT(*) WHERE source = 'ai'
+
+- `cards` table: COUNT(\*) WHERE source = 'ai'
 - `generation_requests` table: SUM(generated_count)
 
 **Average Repetitions:**
+
 ```
 average_repetitions = SUM(repetitions) / COUNT(*)
 ```
@@ -842,16 +921,19 @@ Calculated from `cards` table.
 ### 4.3 Error Handling Strategy
 
 **Client Errors (4xx):**
+
 - Return descriptive error messages
 - Include field-level validation errors when applicable
 - Use standard HTTP status codes
 
 **Server Errors (5xx):**
+
 - Log error details server-side
 - Return generic error message to client
 - Don't expose sensitive implementation details
 
 **Validation Error Response Format:**
+
 ```json
 {
   "error": "Validation failed",
@@ -866,6 +948,7 @@ Calculated from `cards` table.
 ```
 
 **Rate Limit Error Response:**
+
 ```json
 {
   "error": "Rate limit exceeded",
@@ -880,12 +963,14 @@ Calculated from `cards` table.
 ### 4.4 Performance Considerations
 
 **Pagination:**
+
 - Default limit: 50 cards, 20 generation requests
 - Maximum limit: 100 cards, 50 generation requests
 - Use offset-based pagination for simplicity in MVP
 - Consider cursor-based pagination for production
 
 **Database Optimization:**
+
 - Indexes on foreign keys (user_id, card_id)
 - Compound index on (user_id, created_at) for sorting
 - Monitor query performance with EXPLAIN ANALYZE

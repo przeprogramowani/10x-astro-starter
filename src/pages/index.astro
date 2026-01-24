@@ -1,8 +1,9 @@
 ---
-import Welcome from "../components/Welcome.astro";
-import Layout from "../layouts/Layout.astro";
+// Redirect authenticated users to generate page
+const { user } = Astro.locals;
+if (user) {
+  return Astro.redirect("/generate");
+} else {
+  return Astro.redirect("/login");
+}
 ---
-
-<Layout>
-  <Welcome />
-</Layout>

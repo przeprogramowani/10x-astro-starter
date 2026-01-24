@@ -1,11 +1,19 @@
 ---
 import "../styles/global.css";
+import UserMenu from "../components/UserMenu";
 
 interface Props {
   title?: string;
 }
 
 const { title = "10x Astro Starter" } = Astro.props;
+
+// Odczyt użytkownika z locals (ustawiane przez middleware)
+const { user } = Astro.locals;
+
+// Email użytkownika dla UserMenu (jeśli zalogowany)
+const userEmail = user?.email ?? "";
+const currentPath = Astro.url.pathname;
 ---
 
 <!doctype html>
@@ -18,6 +26,80 @@ const { title = "10x Astro Starter" } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
+    {/* Nawigacja */}
+    <nav class="border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          {/* Logo / Brand */}
+          <div class="flex items-center">
+            <a href={user ? "/generate" : "/"} class="flex items-center space-x-2">
+              <span class="text-xl font-bold text-slate-900 dark:text-slate-100">10x Cards</span>
+            </a>
+          </div>
+
+          {/* Linki nawigacyjne */}
+          <div class="flex items-center space-x-4">
+            {
+              user ? (
+                // Nawigacja dla zalogowanych użytkowników
+                <>
+                  <a
+                    href="/generate"
+                    class:list={[
+                      "text-sm font-medium transition-colors",
+                      currentPath === "/generate"
+                        ? "text-primary"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100",
+                    ]}
+                  >
+                    Generuj fiszki
+                  </a>
+                  <UserMenu client:load userEmail={userEmail} />
+                </>
+              ) : (
+                // Nawigacja dla niezalogowanych użytkowników
+                <>
+                  <a
+                    href="/"
+                    class:list={[
+                      "text-sm font-medium transition-colors",
+                      currentPath === "/"
+                        ? "text-primary"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100",
+                    ]}
+                  >
+                    Strona główna
+                  </a>
+                  <a
+                    href="/login"
+                    class:list={[
+                      "text-sm font-medium transition-colors",
+                      currentPath === "/login"
+                        ? "text-primary"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100",
+                    ]}
+                  >
+                    Logowanie
+                  </a>
+                  <a
+                    href="/register"
+                    class:list={[
+                      "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors",
+                      "bg-primary text-primary-foreground hover:bg-primary/90",
+                      "h-9 px-4 py-2",
+                      currentPath === "/register" ? "ring-2 ring-primary ring-offset-2" : "",
+                    ]}
+                  >
+                    Rejestracja
+                  </a>
+                </>
+              )
+            }
+          </div>
+        </div>
+      </div>
+    </nav>
+
     <slot />
   </body>
 </html>

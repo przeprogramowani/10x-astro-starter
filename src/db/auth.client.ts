@@ -1,10 +1,11 @@
-import { createClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
 import type { Database } from "./database.types";
 
 /**
  * Supabase client for client-side authentication
  *
  * This client is configured to work in the browser with:
+ * - Cookie-based session storage (compatible with SSR)
  * - Anonymous key (safe for client-side use)
  * - Session persistence enabled
  * - Auto token refresh enabled
@@ -25,10 +26,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing Supabase environment variables");
 }
 
-export const authClient = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true,
-  },
-});
+// Create browser client with default cookie handling
+// This will automatically handle cookies in a format compatible with the server
+export const authClient = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);

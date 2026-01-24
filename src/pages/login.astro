@@ -1,8 +1,13 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import LoginForm from "../components/LoginForm";
 
-// Placeholder page for /login
-// TODO: Implement login view
+// Check if user is already logged in
+const { user } = Astro.locals;
+if (user) {
+  // Redirect authenticated users to generate page
+  return Astro.redirect("/generate");
+}
 ---
 
 <Layout title="Logowanie - 10x-cards">
@@ -12,15 +17,10 @@ import Layout from "../layouts/Layout.astro";
     <div class="w-full max-w-md">
       <div class="text-center mb-8">
         <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">Zaloguj się</h1>
-        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Ta strona jest w trakcie implementacji</p>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Wpisz swoje dane aby kontynuować</p>
       </div>
       <div class="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-8">
-        <div class="text-center space-y-4">
-          <p class="text-slate-600 dark:text-slate-400">Widok logowania będzie dostępny wkrótce.</p>
-          <p class="text-center text-sm text-slate-600 dark:text-slate-400">
-            Nie masz konta? <a href="/register" class="font-medium text-primary hover:underline">Zarejestruj się</a>
-          </p>
-        </div>
+        <LoginForm client:load />
       </div>
     </div>
   </main>

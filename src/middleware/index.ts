@@ -1,72 +1,64 @@
 import { defineMiddleware } from "astro:middleware";
 
-import { supabaseClient } from "../db/supabase.client.ts";
-import type { User } from "@supabase/supabase-js";
+import { createSupabaseServerInstance } from "../db/supabase.client.ts";
 
 /**
  * Middleware for Astro application
  * Handles:
- * - Supabase client initialization
- * - Authentication for API routes
+ * - Supabase client initialization per-request
+ * - Session verification and user authentication
+ * - Cookie-based session management
+ * - Protection of API routes
  */
 export const onRequest = defineMiddleware(async (context, next) => {
-  const user: User = {
-    id: "eadf7f7b-273a-4fe4-802e-e6804b13eefc",
-    email: "test@test.com",
-    app_metadata: {
-      provider: "email",
-    },
-    user_metadata: {
-      name: "Test User",
-    },
-    aud: "authenticated",
-    created_at: new Date().toISOString(),
-    confirmed_at: new Date().toISOString(),
-  };
+  // Create Supabase instance with proper cookie handling
+  const supabase = createSupabaseServerInstance({
+    cookies: context.cookies,
+    headers: context.request.headers,
+  });
 
-  // Always provide supabase client
-  context.locals.supabase = supabaseClient;
-  context.locals.user = user;
+  // Always provide supabase client to context
+  context.locals.supabase = supabase;
 
-  // For API routes, validate authentication
-  // if (context.url.pathname.startsWith("/api/")) {
-  //   const authHeader = context.request.headers.get("Authorization");
+  // Get user session from cookies
+  try {
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
 
-  //   if (!authHeader?.startsWith("Bearer ")) {
-  //     return new Response(
-  //       JSON.stringify({
-  //         error: "Unauthorized",
-  //         message: "Missing or invalid authentication token",
-  //       }),
-  //       {
-  //         status: 401,
-  //         headers: { "Content-Type": "application/json" },
-  //       }
-  //     );
-  //   }
+    if (!error && user) {
+      // User is authenticated
+      context.locals.user = user;
+    } else {
+      // No valid session
+      context.locals.user = null;
+    }
+  } catch (err) {
+    // Graceful degradation on auth errors
+    console.error("Auth middleware error:", err);
+    context.locals.user = null;
+  }
 
-  //   const token = authHeader.substring(7);
-  //   const {
-  //     data: { user },
-  //     error,
-  //   } = await supabaseClient.auth.getUser(token);
+  // Protect API routes - require authentication
+  if (context.url.pathname.startsWith("/api/")) {
+    // Public API endpoints (none currently, but can be added)
+    const publicEndpoints: string[] = [];
+    const isPublicEndpoint = publicEndpoints.some((endpoint) => context.url.pathname.startsWith(endpoint));
 
-  //   if (error || !user) {
-  //     return new Response(
-  //       JSON.stringify({
-  //         error: "Unauthorized",
-  //         message: "Invalid authentication token",
-  //       }),
-  //       {
-  //         status: 401,
-  //         headers: { "Content-Type": "application/json" },
-  //       }
-  //     );
-  //   }
-
-  //   // Store authenticated user in context
-  //   context.locals.user = user;
-  // }
+    if (!isPublicEndpoint && !context.locals.user) {
+      return new Response(
+        JSON.stringify({
+          error: "Unauthorized",
+          message: "Authentication required",
+        }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+  }
 
   return next();
 });

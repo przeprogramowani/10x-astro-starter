@@ -1,6 +1,6 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '../../db/database.types';
-import type { GenerationRequestEntity, GenerationRequestInsertEntity } from '../../types';
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "../../db/database.types";
+import type { GenerationRequestEntity, GenerationRequestInsertEntity } from "../../types";
 
 /**
  * Generation Request Service for managing AI generation requests
@@ -24,7 +24,7 @@ export async function createGenerationRequest(
   supabase: SupabaseClientType
 ): Promise<GenerationRequestEntity> {
   const { data: generationRequest, error } = await supabase
-    .from('generation_requests')
+    .from("generation_requests")
     .insert({
       user_id: data.user_id,
       input_text: data.input_text,
@@ -34,12 +34,12 @@ export async function createGenerationRequest(
     .single();
 
   if (error) {
-    console.error('Failed to create generation request:', error);
+    console.error("Failed to create generation request:", error);
     throw new Error(`Failed to create generation request: ${error.message}`);
   }
 
   if (!generationRequest) {
-    throw new Error('Generation request created but no data returned');
+    throw new Error("Generation request created but no data returned");
   }
 
   return generationRequest;

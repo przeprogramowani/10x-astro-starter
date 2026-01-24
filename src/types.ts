@@ -1,19 +1,19 @@
-import type { Database } from './db/database.types';
+import type { Database } from "./db/database.types";
 
 // ============================================================================
 // Database Entity Types
 // ============================================================================
 // Extract base entity types from the database schema for reuse
 
-export type CardEntity = Database['public']['Tables']['cards']['Row'];
-export type CardInsertEntity = Database['public']['Tables']['cards']['Insert'];
-export type CardUpdateEntity = Database['public']['Tables']['cards']['Update'];
+export type CardEntity = Database["public"]["Tables"]["cards"]["Row"];
+export type CardInsertEntity = Database["public"]["Tables"]["cards"]["Insert"];
+export type CardUpdateEntity = Database["public"]["Tables"]["cards"]["Update"];
 
-export type GenerationRequestEntity = Database['public']['Tables']['generation_requests']['Row'];
-export type GenerationRequestInsertEntity = Database['public']['Tables']['generation_requests']['Insert'];
+export type GenerationRequestEntity = Database["public"]["Tables"]["generation_requests"]["Row"];
+export type GenerationRequestInsertEntity = Database["public"]["Tables"]["generation_requests"]["Insert"];
 
-export type EventEntity = Database['public']['Tables']['events']['Row'];
-export type EventInsertEntity = Database['public']['Tables']['events']['Insert'];
+export type EventEntity = Database["public"]["Tables"]["events"]["Row"];
+export type EventInsertEntity = Database["public"]["Tables"]["events"]["Insert"];
 
 // ============================================================================
 // Card DTOs and Commands
@@ -32,7 +32,7 @@ export type CardDTO = CardEntity;
  * System fields (id, user_id, source, repetitions, timestamps) are set by the API
  * Used in: POST /api/cards (array of CreateCardCommand)
  */
-export type CreateCardCommand = Pick<CardInsertEntity, 'front' | 'back'>;
+export type CreateCardCommand = Pick<CardInsertEntity, "front" | "back">;
 
 /**
  * Command for updating an existing card
@@ -40,7 +40,7 @@ export type CreateCardCommand = Pick<CardInsertEntity, 'front' | 'back'>;
  * Derived from CardUpdateEntity with only user-modifiable fields
  * Used in: PATCH /api/cards/:id
  */
-export type UpdateCardCommand = Pick<CardUpdateEntity, 'front' | 'back' | 'repetitions'>;
+export type UpdateCardCommand = Pick<CardUpdateEntity, "front" | "back" | "repetitions">;
 
 /**
  * Response DTO for listing cards with pagination
@@ -229,13 +229,13 @@ export interface RateLimitErrorResponseDTO extends ErrorResponseDTO {
  * Based on the event_type field requirements from the API plan
  */
 export type EventType =
-  | 'login'
-  | 'ai_generation'
-  | 'card_accepted'
-  | 'card_rejected'
-  | 'card_edited'
-  | 'card_deleted'
-  | 'card_created_manual';
+  | "login"
+  | "ai_generation"
+  | "card_accepted"
+  | "card_rejected"
+  | "card_edited"
+  | "card_deleted"
+  | "card_created_manual";
 
 /**
  * DTO for event responses (if needed)
@@ -247,7 +247,7 @@ export type EventDTO = EventEntity;
  * Command for creating an event
  * Derived from EventInsertEntity with required fields
  */
-export type CreateEventCommand = Pick<EventInsertEntity, 'event_type' | 'card_id' | 'metadata'>;
+export type CreateEventCommand = Pick<EventInsertEntity, "event_type" | "card_id" | "metadata">;
 
 // ============================================================================
 // Utility Types
@@ -260,9 +260,9 @@ export type CreateEventCommand = Pick<EventInsertEntity, 'event_type' | 'card_id
 export interface GetCardsQueryParams {
   limit?: number;
   offset?: number;
-  source?: 'manual' | 'ai';
-  sort?: 'created_at' | 'updated_at' | 'repetitions';
-  order?: 'asc' | 'desc';
+  source?: "manual" | "ai";
+  sort?: "created_at" | "updated_at" | "repetitions";
+  order?: "asc" | "desc";
 }
 
 /**

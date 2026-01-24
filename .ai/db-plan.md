@@ -13,6 +13,7 @@ This table is managed by Supabase Auth.
 - `confirmed_at` TIMESTAMPTZ
 
 ### 1.2 `cards`
+
 - `id` UUID, PK, `DEFAULT gen_random_uuid()`
 - `user_id` UUID, NOT NULL, FK → `users(id)` ON DELETE CASCADE
 - `front` TEXT, NOT NULL, `CHECK (char_length(front) BETWEEN 1 AND 200)`
@@ -23,6 +24,7 @@ This table is managed by Supabase Auth.
 - `updated_at` TIMESTAMPTZ, NOT NULL, `DEFAULT now()`
 
 ### 1.3 `generation_requests`
+
 - `id` UUID, PK, `DEFAULT gen_random_uuid()`
 - `user_id` UUID, NOT NULL, FK → `users(id)` ON DELETE CASCADE
 - `input_text` TEXT, NULL, `CHECK (input_text IS NULL OR char_length(input_text) BETWEEN 1000 AND 10000)`
@@ -31,6 +33,7 @@ This table is managed by Supabase Auth.
 - `updated_at` TIMESTAMPTZ, NOT NULL, `DEFAULT now()`
 
 ### 1.4 `events`
+
 - `id` UUID, PK, `DEFAULT gen_random_uuid()`
 - `user_id` UUID, NOT NULL, FK → `users(id)` ON DELETE CASCADE
 - `card_id` UUID, NULL, FK → `cards(id)` ON DELETE SET NULL
@@ -40,10 +43,12 @@ This table is managed by Supabase Auth.
 - `updated_at` TIMESTAMPTZ, NOT NULL, `DEFAULT now()`
 
 ### 1.5 Funkcje i triggery
+
 - `set_updated_at()` ustawiająca `updated_at = now()` dla tabel: `users`, `cards`, `generation_requests`, `events`
 - Triggery `BEFORE UPDATE` wywołujące `set_updated_at()` dla powyższych tabel
 
 ## 2. Relacje między tabelami
+
 - `auth.users (1) → (1) users` przez `users.id`
 - `users (1) → (N) cards` przez `cards.user_id`
 - `users (1) → (N) generation_requests` przez `generation_requests.user_id`
@@ -51,10 +56,12 @@ This table is managed by Supabase Auth.
 - `cards (1) → (N) events` przez `events.card_id` (opcjonalne powiązanie)
 
 ## 3. Indeksy
+
 - `cards(user_id)`
 - `generation_requests(user_id)`
 - `events(user_id)`
 
 ## 4. Zasady PostgreSQL (jeśli dotyczy)
+
 - RLS: wyłączone w MVP zgodnie z notatkami z sesji.
 - Rekomendacja na etap produkcyjny: włączyć RLS i dodać polityki `USING (user_id = auth.uid())` oraz `WITH CHECK (user_id = auth.uid())` dla tabel `cards`, `generation_requests`, `events`.

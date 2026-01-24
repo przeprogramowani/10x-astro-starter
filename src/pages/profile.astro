@@ -1,0 +1,69 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ChangePasswordForm from "../components/ChangePasswordForm";
+import DeleteAccountButton from "../components/DeleteAccountButton";
+
+// TODO: Backend - Sprawdzenie sesji użytkownika
+// const { user } = Astro.locals;
+//
+// // Ochrona strony - wymaga zalogowania
+// if (!user) {
+//   return Astro.redirect('/login');
+// }
+
+// Placeholder dane użytkownika dla UI
+const userEmail = "user@example.com";
+---
+
+<Layout title="Profil - 10x-cards">
+  <main
+    class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 py-8 px-4"
+  >
+    <div class="max-w-3xl mx-auto space-y-6">
+      {/* Nagłówek strony */}
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">Ustawienia konta</h1>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Zarządzaj swoim profilem i bezpieczeństwem</p>
+      </div>
+
+      {/* Sekcja: Dane konta */}
+      <div class="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6">
+        <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-4">Dane konta</h2>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"> Adres e-mail </label>
+            <div class="p-3 bg-slate-50 dark:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-600">
+              <p class="text-sm text-slate-900 dark:text-slate-100">{userEmail}</p>
+            </div>
+            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              Adres email jest używany do logowania i nie może być zmieniony
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Sekcja: Zmiana hasła */}
+      <div class="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6">
+        <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-4">Zmiana hasła</h2>
+        <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">
+          Zmień hasło aby zwiększyć bezpieczeństwo swojego konta
+        </p>
+        <ChangePasswordForm client:load />
+      </div>
+
+      {/* Sekcja: Usuwanie konta */}
+      <div class="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6 border-2 border-red-200 dark:border-red-800">
+        <h2 class="text-xl font-semibold text-red-600 dark:text-red-400 mb-4">Strefa niebezpieczna</h2>
+        <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">
+          Usunięcie konta jest operacją nieodwracalną. Wszystkie Twoje fiszki, dane i historia zostanie trwale usunięta.
+        </p>
+        <DeleteAccountButton client:load />
+      </div>
+
+      {/* Link powrotu */}
+      <div class="text-center">
+        <a href="/generate" class="text-sm text-primary hover:underline"> ← Wróć do generowania fiszek </a>
+      </div>
+    </div>
+  </main>
+</Layout>

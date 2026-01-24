@@ -1,6 +1,6 @@
-import { Checkbox } from '@/components/ui/checkbox';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { SuggestedCardDTO } from '@/types';
+import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { SuggestedCardDTO } from "@/types";
 
 interface CardSuggestionItemProps {
   card: SuggestedCardDTO;
@@ -9,12 +9,7 @@ interface CardSuggestionItemProps {
   onSelectionChange: (index: number, selected: boolean) => void;
 }
 
-export default function CardSuggestionItem({
-  card,
-  index,
-  isSelected,
-  onSelectionChange
-}: CardSuggestionItemProps) {
+export default function CardSuggestionItem({ card, index, isSelected, onSelectionChange }: CardSuggestionItemProps) {
   return (
     <div className="flex items-start gap-3">
       <Checkbox
