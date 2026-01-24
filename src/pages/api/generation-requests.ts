@@ -1,0 +1,207 @@
+import type { APIRoute } from "astro";
+import { z } from "zod";
+
+import { CreateGenerationRequestSchema } from "../../lib/schemas/generation-request.schema";
+import { generateFlashcards } from "../../lib/services/ai.service";
+import { createAIGenerationEvent } from "../../lib/services/event.service";
+import { createGenerationRequest } from "../../lib/services/generation-request.service";
+import type { GenerationRequestResponseDTO, ValidationErrorResponseDTO } from "../../types";
+
+/**
+ * Disable prerendering for this API endpoint
+ */
+export const prerender = false;
+
+/**
+ * POST /api/generation-requests
+ * Creates a new AI generation request and returns suggested flashcards
+ *
+ * Request body:
+ * - input_text: string (1000-10000 characters)
+ *
+ * Responses:
+ * - 200 OK: Returns generation request with suggested cards
+ * - 400 Bad Request: Validation error
+ * - 401 Unauthorized: Missing or invalid authentication (handled by middleware)
+ * - 502 Bad Gateway: AI service error
+ * - 500 Internal Server Error: Unexpected error
+ */
+export const POST: APIRoute = async ({ request, locals }) => {
+  try {
+    // Step 1: Verify authentication (user should be set by middleware)
+    const { user, supabase } = locals;
+
+    // if (!user) {
+    //   return new Response(
+    //     JSON.stringify({
+    //       error: "Unauthorized",
+    //       message: "Missing or invalid authentication token",
+    //     }),
+    //     {
+    //       status: 401,
+    //       headers: { "Content-Type": "application/json" },
+    //     }
+    //   );
+    // }
+
+    const userId = "eadf7f7b-273a-4fe4-802e-e6804b13eefc";
+
+    // Step 2: Parse and validate request body
+    let requestBody: unknown;
+    try {
+      requestBody = await request.json();
+    } catch {
+      return new Response(
+        JSON.stringify({
+          error: "Validation failed",
+          details: [
+            {
+              field: "body",
+              message: "Invalid JSON in request body",
+            },
+          ],
+        } satisfies ValidationErrorResponseDTO),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Step 3: Validate with Zod schema
+    let validated: z.infer<typeof CreateGenerationRequestSchema>;
+    try {
+      validated = CreateGenerationRequestSchema.parse(requestBody);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return new Response(
+          JSON.stringify({
+            error: "Validation failed",
+            details: error.errors.map((err) => ({
+              field: err.path.join(".") || "unknown",
+              message: err.message,
+              value:
+                err.path.length > 0 && requestBody && typeof requestBody === "object"
+                  ? (requestBody as Record<string, unknown>)[err.path[0] as string]
+                  : undefined,
+            })),
+          } satisfies ValidationErrorResponseDTO),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      throw error;
+    }
+
+    // Step 4: Call AI service to generate flashcards
+    let suggestedCards;
+    try {
+      suggestedCards = await generateFlashcards(validated.input_text);
+
+      // Verify we got valid cards
+      if (!suggestedCards || suggestedCards.length === 0) {
+        throw new Error("No cards generated");
+      }
+    } catch (error) {
+      console.error("AI service error:", {
+        error: error instanceof Error ? error.message : "Unknown error",
+        user_id: userId,
+        timestamp: new Date().toISOString(),
+      });
+
+      return new Response(
+        JSON.stringify({
+          error: "AI service unavailable",
+          message: "Unable to generate flashcards at this time. Please try again later.",
+        }),
+        {
+          status: 502,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Step 5: Save generation request to database
+    let generationRequest;
+    try {
+      generationRequest = await createGenerationRequest(
+        {
+          user_id: userId,
+          input_text: validated.input_text,
+          generated_count: suggestedCards.length,
+        },
+        supabase
+      );
+    } catch (error) {
+      console.error("Database error creating generation request:", {
+        error: error instanceof Error ? error.message : "Unknown error",
+        user_id: userId,
+        timestamp: new Date().toISOString(),
+      });
+
+      return new Response(
+        JSON.stringify({
+          error: "Internal server error",
+          message: "An unexpected error occurred. Please try again later.",
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Step 6: Log AI generation event (non-blocking - don't fail request if this fails)
+    try {
+      await createAIGenerationEvent(
+        generationRequest.id,
+        suggestedCards.length,
+        validated.input_text.length,
+        userId,
+        supabase
+      );
+    } catch (error) {
+      // Log error but don't fail the request
+      console.error("Failed to create AI generation event:", {
+        error: error instanceof Error ? error.message : "Unknown error",
+        generation_request_id: generationRequest.id,
+        user_id: userId,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    // Step 7: Construct and return response
+    const response: GenerationRequestResponseDTO = {
+      generation_request_id: generationRequest.id,
+      generated_count: suggestedCards.length,
+      suggested_cards: suggestedCards,
+      created_at: generationRequest.created_at,
+    };
+
+    return new Response(JSON.stringify(response), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    // Global error handler - catch any unexpected errors
+    console.error("Unexpected error in POST /api/generation-requests:", {
+      error: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString(),
+    });
+
+    return new Response(
+      JSON.stringify({
+        error: "Internal server error",
+        message: "An unexpected error occurred. Please try again later.",
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+};
