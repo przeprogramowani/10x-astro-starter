@@ -131,6 +131,7 @@ export async function createCardEditedEvent(
 /**
  * Creates a card deleted event
  * Helper function for logging card deletions
+ * Note: card_id is stored in metadata since the card no longer exists in the database
  * @param cardId - ID of the deleted card
  * @param userId - ID of the user
  * @param supabase - Supabase client instance
@@ -144,8 +145,10 @@ export async function createCardDeletedEvent(
   return createEvent(
     {
       event_type: "card_deleted",
-      card_id: cardId,
-      metadata: null,
+      card_id: null,
+      metadata: {
+        deleted_card_id: cardId,
+      },
     },
     userId,
     supabase

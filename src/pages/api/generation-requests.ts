@@ -36,22 +36,22 @@ export const prerender = false;
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
     // Step 1: Verify authentication (user should be set by middleware)
-    const { supabase } = locals;
+    const { supabase, user } = locals;
 
-    // if (!user) {
-    //   return new Response(
-    //     JSON.stringify({
-    //       error: "Unauthorized",
-    //       message: "Missing or invalid authentication token",
-    //     }),
-    //     {
-    //       status: 401,
-    //       headers: { "Content-Type": "application/json" },
-    //     }
-    //   );
-    // }
+    if (!user) {
+      return new Response(
+        JSON.stringify({
+          error: "Unauthorized",
+          message: "Missing or invalid authentication token",
+        }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
 
-    const userId = "eadf7f7b-273a-4fe4-802e-e6804b13eefc";
+    const userId = user.id;
 
     // Step 2: Parse and validate request body
     let requestBody: unknown;

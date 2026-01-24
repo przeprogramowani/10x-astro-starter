@@ -132,6 +132,14 @@ Kryteria akceptacji:
 
 - Tylko zalogowany uzytkownik ma dostęp do formularza zmiany hasła.
 
+ID: US-010
+Tytuł: Lista wygenerowanych fiszek
+Opis: Jako zalogowany użytkownik chcę móc zobaczyć wygenerowane i zaakceptowane przeze mnie fiszki.
+Kryteria akceptacji:
+
+- Tylko zalogowany uzytkownik ma dostęp do listy fiszek.
+- Kazdy uzytkownik widzi tylko fiszki wygenerowane przez siebie.
+
 ## 6. Metryki sukcesu
 
 1. Efektywność generowania fiszek:

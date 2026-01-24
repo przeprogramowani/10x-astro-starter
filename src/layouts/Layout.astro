@@ -54,6 +54,17 @@ const currentPath = Astro.url.pathname;
                   >
                     Generuj fiszki
                   </a>
+                  <a
+                    href="/cards"
+                    class:list={[
+                      "text-sm font-medium transition-colors",
+                      currentPath === "/cards"
+                        ? "text-primary"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100",
+                    ]}
+                  >
+                    Moje fiszki
+                  </a>
                   <UserMenu client:load userEmail={userEmail} />
                 </>
               ) : (

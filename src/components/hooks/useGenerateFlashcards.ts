@@ -16,6 +16,8 @@ interface UseGenerateFlashcardsReturn {
   error: string | null;
   isLoading: boolean;
   isSaving: boolean;
+  showSuccessDialog: boolean;
+  closeSuccessDialog: () => void;
 }
 
 export function useGenerateFlashcards(): UseGenerateFlashcardsReturn {
@@ -24,6 +26,7 @@ export function useGenerateFlashcards(): UseGenerateFlashcardsReturn {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
   const generateFlashcards = async (inputText: string) => {
     setIsLoading(true);
@@ -37,6 +40,7 @@ export function useGenerateFlashcards(): UseGenerateFlashcardsReturn {
       const response = await fetch("/api/generation-requests", {
         method: "POST",
         signal: controller.signal,
+        credentials: "same-origin",
         headers: {
           "Content-Type": "application/json",
         },
@@ -92,6 +96,7 @@ export function useGenerateFlashcards(): UseGenerateFlashcardsReturn {
     try {
       const response = await fetch("/api/cards?source=ai", {
         method: "POST",
+        credentials: "same-origin",
         headers: {
           "Content-Type": "application/json",
         },
@@ -102,7 +107,7 @@ export function useGenerateFlashcards(): UseGenerateFlashcardsReturn {
         throw new Error("Zapis nie powiódł się");
       }
 
-      alert("Fiszki zostały zapisane");
+      setShowSuccessDialog(true);
       setViewState("idle");
       setSuggestedCards([]);
     } catch (err) {
@@ -110,6 +115,10 @@ export function useGenerateFlashcards(): UseGenerateFlashcardsReturn {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const closeSuccessDialog = () => {
+    setShowSuccessDialog(false);
   };
 
   return {
@@ -120,5 +129,7 @@ export function useGenerateFlashcards(): UseGenerateFlashcardsReturn {
     error,
     isLoading,
     isSaving,
+    showSuccessDialog,
+    closeSuccessDialog,
   };
 }

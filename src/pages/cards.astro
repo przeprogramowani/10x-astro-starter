@@ -1,0 +1,15 @@
+---
+import Layout from '../layouts/Layout.astro';
+import CardsView from '../components/cards/CardsView';
+
+// Protected route - middleware checks auth
+const { user } = Astro.locals;
+
+if (!user) {
+  return Astro.redirect('/login');
+}
+---
+
+<Layout title="Moje fiszki | 10x Cards">
+  <CardsView client:load />
+</Layout>
