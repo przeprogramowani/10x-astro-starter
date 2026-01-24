@@ -30,6 +30,7 @@ Additional documentation:
 - Frontend: Astro 5, React 19, TypeScript 5, Tailwind CSS 4, Shadcn/ui
 - Backend: Supabase (PostgreSQL database, authentication)
 - AI: OpenRouter.ai (LLM access)
+- Testing: Vitest (unit tests), Playwright (e2e tests)
 - Tooling: ESLint, Prettier, Husky, lint-staged
 
 ## Getting Started Locally
@@ -57,6 +58,11 @@ npm run dev
 - `npm run lint` - Run ESLint
 - `npm run lint:fix` - Fix ESLint issues automatically
 - `npm run format` - Format files with Prettier
+- `npm run test` - Run unit tests with Vitest
+- `npm run test:ui` - Run unit tests with Vitest UI
+- `npm run test:coverage` - Run unit tests with coverage report
+- `npm run test:e2e` - Run e2e tests with Playwright
+- `npm run test:e2e:ui` - Run e2e tests with Playwright UI
 
 ## Project Scope
 

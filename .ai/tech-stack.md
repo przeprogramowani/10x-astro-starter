@@ -18,6 +18,19 @@ AI - Komunikacja z modelami przez usługę Openrouter.ai:
 - Dostęp do szerokiej gamy modeli (OpenAI, Anthropic, Google i wiele innych), które pozwolą nam znaleźć rozwiązanie zapewniające wysoką efektywność i niskie koszta
 - Pozwala na ustawianie limitów finansowych na klucze API
 
+Testowanie:
+
+- Vitest do testów jednostkowych:
+  - Szybki framework testowy kompatybilny z Vite i Astro
+  - Natywne wsparcie dla TypeScript i ESM
+  - Wbudowane narzędzia do mockowania i coverage
+  - Interfejs UI do interaktywnego uruchamiania testów
+- Playwright do testów end-to-end:
+  - Automatyzacja testów w przeglądarkach (Chromium, Firefox, WebKit)
+  - Wsparcie dla testowania interakcji użytkownika z aplikacją
+  - Możliwość uruchamiania testów w trybie headed i headless
+  - Narzędzia do debugowania i nagrywania testów
+
 CI/CD i Hosting:
 
 - Github Actions do tworzenia pipeline’ów CI/CD
