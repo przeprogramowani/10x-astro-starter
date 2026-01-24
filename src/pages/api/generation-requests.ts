@@ -3,6 +3,13 @@ import { z } from "zod";
 
 import { CreateGenerationRequestSchema } from "../../lib/schemas/generation-request.schema";
 import { generateFlashcards } from "../../lib/services/ai.service";
+import {
+  OpenRouterError,
+  OpenRouterRateLimitError,
+  OpenRouterTimeoutError,
+  OpenRouterValidationError,
+  OpenRouterAPIError,
+} from "../../lib/services/openrouter.errors";
 import { createAIGenerationEvent } from "../../lib/services/event.service";
 import { createGenerationRequest } from "../../lib/services/generation-request.service";
 import type { GenerationRequestResponseDTO, ValidationErrorResponseDTO } from "../../types";
@@ -29,7 +36,7 @@ export const prerender = false;
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
     // Step 1: Verify authentication (user should be set by middleware)
-    const { user, supabase } = locals;
+    const { supabase } = locals;
 
     // if (!user) {
     //   return new Response(
@@ -106,7 +113,114 @@ export const POST: APIRoute = async ({ request, locals }) => {
         throw new Error("No cards generated");
       }
     } catch (error) {
-      console.error("AI service error:", {
+      // Handle OpenRouter rate limit errors (429)
+      if (error instanceof OpenRouterRateLimitError) {
+        console.warn("Rate limit exceeded:", {
+          retryAfter: error.retryAfter,
+          user_id: userId,
+          timestamp: new Date().toISOString(),
+        });
+
+        return new Response(
+          JSON.stringify({
+            error: "Rate limit exceeded",
+            message: "Too many AI generation requests. Please try again later.",
+            retry_after: error.retryAfter,
+          }),
+          {
+            status: 429,
+            headers: {
+              "Content-Type": "application/json",
+              "Retry-After": error.retryAfter.toString(),
+            },
+          }
+        );
+      }
+
+      // Handle OpenRouter timeout errors (504)
+      if (error instanceof OpenRouterTimeoutError) {
+        console.error("AI generation timeout:", {
+          error: error.message,
+          user_id: userId,
+          timestamp: new Date().toISOString(),
+        });
+
+        return new Response(
+          JSON.stringify({
+            error: "Request timeout",
+            message: "AI generation took too long. Please try again with shorter text or wait a moment.",
+          }),
+          {
+            status: 504,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      // Handle OpenRouter validation errors (500)
+      if (error instanceof OpenRouterValidationError) {
+        console.error("OpenRouter validation error:", {
+          error: error.message,
+          details: error.details,
+          user_id: userId,
+          timestamp: new Date().toISOString(),
+        });
+
+        return new Response(
+          JSON.stringify({
+            error: "AI generation failed",
+            message: "Unable to generate valid flashcards. Please try different text.",
+          }),
+          {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      // Handle OpenRouter API errors (401, 404, 500, etc.)
+      if (error instanceof OpenRouterAPIError) {
+        console.error("OpenRouter API error:", {
+          error: error.message,
+          status: error.status,
+          user_id: userId,
+          timestamp: new Date().toISOString(),
+        });
+
+        return new Response(
+          JSON.stringify({
+            error: "AI service error",
+            message: "An error occurred with the AI service. Please try again later.",
+          }),
+          {
+            status: 502,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      // Handle other OpenRouter errors
+      if (error instanceof OpenRouterError) {
+        console.error("OpenRouter error:", {
+          error: error.message,
+          user_id: userId,
+          timestamp: new Date().toISOString(),
+        });
+
+        return new Response(
+          JSON.stringify({
+            error: "AI service error",
+            message: "An error occurred with the AI service. Please try again later.",
+          }),
+          {
+            status: 502,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      // Handle unexpected errors
+      console.error("Unexpected AI service error:", {
         error: error instanceof Error ? error.message : "Unknown error",
         user_id: userId,
         timestamp: new Date().toISOString(),
