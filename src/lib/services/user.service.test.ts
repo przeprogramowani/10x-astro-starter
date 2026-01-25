@@ -17,9 +17,17 @@ const consoleInfoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
 
 describe("User Service", () => {
   let mockAdminClient: SupabaseClient<Database>;
+  let mockSupabase: SupabaseClient<Database>;
 
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // Create mock authenticated supabase client
+    mockSupabase = {
+      auth: {
+        getUser: vi.fn(),
+      },
+    } as unknown as SupabaseClient<Database>;
 
     // Create mock admin client
     mockAdminClient = {
@@ -36,9 +44,15 @@ describe("User Service", () => {
 
   describe("deleteUserAccount()", () => {
     describe("Successful deletion", () => {
-      it("should delete user from Supabase Auth", async () => {
+      it("should delete user from Supabase Auth after verifying identity", async () => {
         // Arrange
         const userId = "user-123";
+
+        // Mock getUser to return authenticated user
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: userId } },
+          error: null,
+        });
 
         (mockAdminClient.auth.admin.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
           data: {},
@@ -46,9 +60,10 @@ describe("User Service", () => {
         });
 
         // Act
-        await deleteUserAccount(userId);
+        await deleteUserAccount(userId, mockSupabase);
 
         // Assert
+        expect(mockSupabase.auth.getUser).toHaveBeenCalledTimes(1);
         expect(createSupabaseAdminClient).toHaveBeenCalledTimes(1);
         expect(mockAdminClient.auth.admin.deleteUser).toHaveBeenCalledWith(userId);
       });
@@ -57,18 +72,28 @@ describe("User Service", () => {
         // Arrange
         const userId = "user-456";
 
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: userId } },
+          error: null,
+        });
+
         (mockAdminClient.auth.admin.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
           data: {},
           error: null,
         });
 
         // Act & Assert
-        await expect(deleteUserAccount(userId)).resolves.not.toThrow();
+        await expect(deleteUserAccount(userId, mockSupabase)).resolves.not.toThrow();
       });
 
       it("should log success message with user_id and timestamp", async () => {
         // Arrange
         const userId = "user-789";
+
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: userId } },
+          error: null,
+        });
 
         (mockAdminClient.auth.admin.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
           data: {},
@@ -76,7 +101,7 @@ describe("User Service", () => {
         });
 
         // Act
-        await deleteUserAccount(userId);
+        await deleteUserAccount(userId, mockSupabase);
 
         // Assert
         expect(consoleInfoSpy).toHaveBeenCalledWith(
@@ -92,13 +117,18 @@ describe("User Service", () => {
         // Arrange
         const userId = "user-abc";
 
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: userId } },
+          error: null,
+        });
+
         (mockAdminClient.auth.admin.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
           data: {},
           error: null,
         });
 
         // Act
-        await deleteUserAccount(userId);
+        await deleteUserAccount(userId, mockSupabase);
 
         // Assert
         expect(consoleInfoSpy).toHaveBeenCalledWith(
@@ -113,13 +143,18 @@ describe("User Service", () => {
         // Arrange
         const userId = "user-def";
 
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: userId } },
+          error: null,
+        });
+
         (mockAdminClient.auth.admin.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
           data: {},
           error: null,
         });
 
         // Act
-        await deleteUserAccount(userId);
+        await deleteUserAccount(userId, mockSupabase);
 
         // Assert
         expect(createSupabaseAdminClient).toHaveBeenCalled();
@@ -129,17 +164,119 @@ describe("User Service", () => {
         // Arrange
         const userId = "550e8400-e29b-41d4-a716-446655440000";
 
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: userId } },
+          error: null,
+        });
+
         (mockAdminClient.auth.admin.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
           data: {},
           error: null,
         });
 
         // Act
-        await deleteUserAccount(userId);
+        await deleteUserAccount(userId, mockSupabase);
 
         // Assert
         expect(mockAdminClient.auth.admin.deleteUser).toHaveBeenCalledWith(userId);
         expect(consoleInfoSpy).toHaveBeenCalled();
+      });
+    });
+
+    describe("Security and validation", () => {
+      it("should verify user identity before deletion", async () => {
+        // Arrange
+        const userId = "user-123";
+
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: userId } },
+          error: null,
+        });
+
+        (mockAdminClient.auth.admin.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: {},
+          error: null,
+        });
+
+        // Act
+        await deleteUserAccount(userId, mockSupabase);
+
+        // Assert
+        expect(mockSupabase.auth.getUser).toHaveBeenCalledTimes(1);
+      });
+
+      it("should throw error if authenticated user doesn't match target userId", async () => {
+        // Arrange
+        const authenticatedUserId = "user-123";
+        const targetUserId = "user-456";
+
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: authenticatedUserId } },
+          error: null,
+        });
+
+        // Act & Assert
+        await expect(deleteUserAccount(targetUserId, mockSupabase)).rejects.toThrow(
+          "Cannot delete another user's account"
+        );
+      });
+
+      it("should throw error if user authentication fails", async () => {
+        // Arrange
+        const userId = "user-123";
+
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: null },
+          error: { message: "Invalid token", name: "AuthError", status: 401 },
+        });
+
+        // Act & Assert
+        await expect(deleteUserAccount(userId, mockSupabase)).rejects.toThrow(
+          "Authentication verification failed"
+        );
+      });
+
+      it("should throw error if no user in auth response", async () => {
+        // Arrange
+        const userId = "user-123";
+
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: null },
+          error: null,
+        });
+
+        // Act & Assert
+        await expect(deleteUserAccount(userId, mockSupabase)).rejects.toThrow(
+          "Authentication verification failed"
+        );
+      });
+
+      it("should log error when user tries to delete different account", async () => {
+        // Arrange
+        const authenticatedUserId = "user-123";
+        const targetUserId = "user-456";
+
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: authenticatedUserId } },
+          error: null,
+        });
+
+        // Act
+        try {
+          await deleteUserAccount(targetUserId, mockSupabase);
+        } catch {
+          // Expected to throw
+        }
+
+        // Assert
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          "User attempting to delete different account:",
+          expect.objectContaining({
+            authenticated_user_id: authenticatedUserId,
+            target_user_id: targetUserId,
+            timestamp: expect.any(String),
+          })
+        );
       });
     });
 
@@ -153,13 +290,20 @@ describe("User Service", () => {
           status: 404,
         };
 
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: userId } },
+          error: null,
+        });
+
         (mockAdminClient.auth.admin.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
           data: { user: null },
           error: mockError,
         });
 
         // Act & Assert
-        await expect(deleteUserAccount(userId)).rejects.toThrow(/Failed to delete user account/);
+        await expect(deleteUserAccount(userId, mockSupabase)).rejects.toThrow(
+          /Failed to delete user account/
+        );
       });
 
       it("should include original error message in thrown error", async () => {
@@ -171,13 +315,18 @@ describe("User Service", () => {
           status: 500,
         };
 
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: userId } },
+          error: null,
+        });
+
         (mockAdminClient.auth.admin.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
           data: { user: null },
           error: mockError,
         });
 
         // Act & Assert
-        await expect(deleteUserAccount(userId)).rejects.toThrow(
+        await expect(deleteUserAccount(userId, mockSupabase)).rejects.toThrow(
           "Failed to delete user account: Database connection timeout"
         );
       });
@@ -191,6 +340,11 @@ describe("User Service", () => {
           status: 403,
         };
 
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: userId } },
+          error: null,
+        });
+
         (mockAdminClient.auth.admin.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
           data: { user: null },
           error: mockError,
@@ -198,7 +352,7 @@ describe("User Service", () => {
 
         // Act
         try {
-          await deleteUserAccount(userId);
+          await deleteUserAccount(userId, mockSupabase);
         } catch {
           // Expected to throw
         }
@@ -223,6 +377,11 @@ describe("User Service", () => {
           status: 500,
         };
 
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: userId } },
+          error: null,
+        });
+
         (mockAdminClient.auth.admin.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
           data: { user: null },
           error: mockError,
@@ -230,7 +389,7 @@ describe("User Service", () => {
 
         // Act
         try {
-          await deleteUserAccount(userId);
+          await deleteUserAccount(userId, mockSupabase);
         } catch {
           // Expected to throw
         }
@@ -253,13 +412,18 @@ describe("User Service", () => {
           status: 0,
         };
 
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: userId } },
+          error: null,
+        });
+
         (mockAdminClient.auth.admin.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
           data: { user: null },
           error: mockError,
         });
 
         // Act & Assert
-        await expect(deleteUserAccount(userId)).rejects.toThrow(
+        await expect(deleteUserAccount(userId, mockSupabase)).rejects.toThrow(
           "Failed to delete user account: Network request failed"
         );
       });
@@ -273,13 +437,18 @@ describe("User Service", () => {
           status: 401,
         };
 
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: userId } },
+          error: null,
+        });
+
         (mockAdminClient.auth.admin.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
           data: { user: null },
           error: mockError,
         });
 
         // Act & Assert
-        await expect(deleteUserAccount(userId)).rejects.toThrow(
+        await expect(deleteUserAccount(userId, mockSupabase)).rejects.toThrow(
           "Failed to delete user account: Invalid service role key"
         );
       });
@@ -293,6 +462,11 @@ describe("User Service", () => {
           status: 500,
         };
 
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: userId } },
+          error: null,
+        });
+
         (mockAdminClient.auth.admin.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
           data: { user: null },
           error: mockError,
@@ -302,7 +476,7 @@ describe("User Service", () => {
 
         // Act
         try {
-          await deleteUserAccount(userId);
+          await deleteUserAccount(userId, mockSupabase);
         } catch {
           // Expected to throw
         }
@@ -317,6 +491,11 @@ describe("User Service", () => {
         // Arrange
         const userId = "";
 
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: userId } },
+          error: null,
+        });
+
         (mockAdminClient.auth.admin.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
           data: { user: null },
           error: {
@@ -327,12 +506,17 @@ describe("User Service", () => {
         });
 
         // Act & Assert
-        await expect(deleteUserAccount(userId)).rejects.toThrow(/Failed to delete user account/);
+        await expect(deleteUserAccount(userId, mockSupabase)).rejects.toThrow(/Failed to delete user account/);
       });
 
       it("should handle invalid UUID format", async () => {
         // Arrange
         const userId = "not-a-valid-uuid";
+
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: userId } },
+          error: null,
+        });
 
         (mockAdminClient.auth.admin.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
           data: { user: null },
@@ -344,12 +528,17 @@ describe("User Service", () => {
         });
 
         // Act & Assert
-        await expect(deleteUserAccount(userId)).rejects.toThrow(/Failed to delete user account/);
+        await expect(deleteUserAccount(userId, mockSupabase)).rejects.toThrow(/Failed to delete user account/);
       });
 
       it("should handle non-existent user gracefully", async () => {
         // Arrange
         const userId = "non-existent-user-id";
+
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: userId } },
+          error: null,
+        });
 
         (mockAdminClient.auth.admin.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
           data: { user: null },
@@ -361,7 +550,7 @@ describe("User Service", () => {
         });
 
         // Act & Assert
-        await expect(deleteUserAccount(userId)).rejects.toThrow(
+        await expect(deleteUserAccount(userId, mockSupabase)).rejects.toThrow(
           "Failed to delete user account: User not found"
         );
       });
@@ -370,13 +559,18 @@ describe("User Service", () => {
         // Arrange
         const userId = "user-exact-match-123";
 
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: userId } },
+          error: null,
+        });
+
         (mockAdminClient.auth.admin.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
           data: {},
           error: null,
         });
 
         // Act
-        await deleteUserAccount(userId);
+        await deleteUserAccount(userId, mockSupabase);
 
         // Assert
         expect(mockAdminClient.auth.admin.deleteUser).toHaveBeenCalledWith(userId);
@@ -392,14 +586,24 @@ describe("User Service", () => {
         const userId1 = "user-1";
         const userId2 = "user-2";
 
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>)
+          .mockResolvedValueOnce({
+            data: { user: { id: userId1 } },
+            error: null,
+          })
+          .mockResolvedValueOnce({
+            data: { user: { id: userId2 } },
+            error: null,
+          });
+
         (mockAdminClient.auth.admin.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
           data: {},
           error: null,
         });
 
         // Act
-        await deleteUserAccount(userId1);
-        await deleteUserAccount(userId2);
+        await deleteUserAccount(userId1, mockSupabase);
+        await deleteUserAccount(userId2, mockSupabase);
 
         // Assert
         expect(createSupabaseAdminClient).toHaveBeenCalledTimes(2);
@@ -409,13 +613,18 @@ describe("User Service", () => {
         // Arrange
         const userId = "user-admin";
 
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: userId } },
+          error: null,
+        });
+
         (mockAdminClient.auth.admin.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
           data: {},
           error: null,
         });
 
         // Act
-        await deleteUserAccount(userId);
+        await deleteUserAccount(userId, mockSupabase);
 
         // Assert
         expect(mockAdminClient.auth.admin.deleteUser).toHaveBeenCalled();
@@ -425,13 +634,18 @@ describe("User Service", () => {
         // Arrange
         const userId = "user-param-check";
 
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: userId } },
+          error: null,
+        });
+
         (mockAdminClient.auth.admin.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
           data: {},
           error: null,
         });
 
         // Act
-        await deleteUserAccount(userId);
+        await deleteUserAccount(userId, mockSupabase);
 
         // Assert
         expect(mockAdminClient.auth.admin.deleteUser).toHaveBeenCalledWith(userId);
@@ -444,13 +658,18 @@ describe("User Service", () => {
         // Arrange
         const userId = "user-cascade";
 
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: userId } },
+          error: null,
+        });
+
         (mockAdminClient.auth.admin.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
           data: {},
           error: null,
         });
 
         // Act
-        await deleteUserAccount(userId);
+        await deleteUserAccount(userId, mockSupabase);
 
         // Assert
         // Only auth deletion should be called - no manual cleanup of cards, etc.
@@ -465,13 +684,18 @@ describe("User Service", () => {
         // Arrange
         const userId = "user-single-op";
 
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: userId } },
+          error: null,
+        });
+
         (mockAdminClient.auth.admin.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
           data: {},
           error: null,
         });
 
         // Act
-        await deleteUserAccount(userId);
+        await deleteUserAccount(userId, mockSupabase);
 
         // Assert
         expect(mockAdminClient.auth.admin.deleteUser).toHaveBeenCalledTimes(1);
@@ -483,13 +707,18 @@ describe("User Service", () => {
         // Arrange
         const userId = "user-void";
 
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: userId } },
+          error: null,
+        });
+
         (mockAdminClient.auth.admin.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
           data: {},
           error: null,
         });
 
         // Act
-        const result = await deleteUserAccount(userId);
+        const result = await deleteUserAccount(userId, mockSupabase);
 
         // Assert
         expect(result).toBeUndefined();
@@ -499,13 +728,18 @@ describe("User Service", () => {
         // Arrange
         const userId = "user-no-return";
 
+        (mockSupabase.auth.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { user: { id: userId } },
+          error: null,
+        });
+
         (mockAdminClient.auth.admin.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
           data: {},
           error: null,
         });
 
         // Act
-        const result = await deleteUserAccount(userId);
+        const result = await deleteUserAccount(userId, mockSupabase);
 
         // Assert
         expect(result).toBe(undefined);

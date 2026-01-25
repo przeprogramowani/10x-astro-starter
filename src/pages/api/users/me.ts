@@ -27,7 +27,7 @@ export const prerender = false;
 export const DELETE: APIRoute = async ({ locals }) => {
   try {
     // Step 1: Verify authentication (user should be set by middleware)
-    const { user } = locals;
+    const { user, supabase } = locals;
 
     if (!user) {
       return new Response(
@@ -46,7 +46,7 @@ export const DELETE: APIRoute = async ({ locals }) => {
 
     // Step 2: Delete user account and all associated data
     try {
-      await deleteUserAccount(userId);
+      await deleteUserAccount(userId, supabase);
     } catch (error) {
       console.error("Failed to delete user account:", {
         error: error instanceof Error ? error.message : "Unknown error",

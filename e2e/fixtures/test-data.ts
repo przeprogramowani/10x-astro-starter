@@ -4,8 +4,8 @@
 
 export const testUsers = {
   valid: {
-    email: "test@example.com",
-    password: "Test123!@#",
+    email: process.env.E2E_TEST_USER_EMAIL || "",
+    password: process.env.E2E_TEST_USER_PASSWORD || "",
   },
   invalid: {
     email: "invalid@example.com",

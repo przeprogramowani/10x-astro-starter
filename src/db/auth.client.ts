@@ -17,13 +17,12 @@ import type { Database } from "./database.types";
  * Note: Uses PUBLIC_ prefixed env vars that are exposed to the browser
  */
 
-// For client-side, we need PUBLIC_ prefixed variables
-// If they're not available, fall back to the server-side ones
-const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || import.meta.env.SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.SUPABASE_KEY;
+// For client-side, we need PUBLIC_ prefixed variables that are exposed to the browser
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("Missing Supabase environment variables");
+  throw new Error("Missing PUBLIC_SUPABASE_URL or PUBLIC_SUPABASE_ANON_KEY environment variables");
 }
 
 // Create browser client with default cookie handling
