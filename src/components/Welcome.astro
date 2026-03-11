@@ -1,3 +1,18 @@
+---
+import { readFileSync } from "node:fs";
+import LibBadge from "@/components/ui/LibBadge.astro";
+
+const pkg = JSON.parse(readFileSync("package.json", "utf-8"));
+const ver = (v: string) => v.replace(/[\^~]/, "");
+const astroVersion = ver(pkg.dependencies.astro);
+const reactVersion = ver(pkg.dependencies.react);
+const tailwindVersion = ver(pkg.dependencies.tailwindcss);
+const typescriptVersion = ver(pkg.devDependencies.typescript);
+const eslintVersion = ver(pkg.devDependencies.eslint);
+const prettierPkg = JSON.parse(readFileSync("node_modules/prettier/package.json", "utf-8"));
+const prettierVersion = prettierPkg.version;
+---
+
 <div
   class="relative w-full mx-auto min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900 p-4 sm:p-8"
 >
@@ -25,15 +40,15 @@
           </h2>
           <ul class="space-y-3">
             <li class="flex items-center space-x-3">
-              <span class="font-mono bg-blue-900/50 px-3 py-1.5 rounded-lg text-blue-200 shadow-sm">Astro v5.5.5</span>
+              <LibBadge name="Astro" version={astroVersion} />
               <span class="text-blue-100/90">- Metaframework do aplikacji webowych</span>
             </li>
             <li class="flex items-center space-x-3">
-              <span class="font-mono bg-blue-900/50 px-3 py-1.5 rounded-lg text-blue-200 shadow-sm">React v19</span>
+              <LibBadge name="React" version={reactVersion} />
               <span class="text-blue-100/90">- Biblioteka UI do komponentów interaktywnych</span>
             </li>
             <li class="flex items-center space-x-3">
-              <span class="font-mono bg-blue-900/50 px-3 py-1.5 rounded-lg text-blue-200 shadow-sm">TypeScript</span>
+              <LibBadge name="TypeScript" version={typescriptVersion} />
               <span class="text-blue-100/90">- Typowanie statyczne</span>
             </li>
           </ul>
@@ -47,9 +62,7 @@
           </h2>
           <ul class="space-y-3">
             <li class="flex items-center space-x-3">
-              <span class="font-mono bg-blue-900/50 px-3 py-1.5 rounded-lg text-blue-200 shadow-sm"
-                >Tailwind CSS v4</span
-              >
+              <LibBadge name="Tailwind CSS" version={tailwindVersion} />
               <span class="text-blue-100/90">- Utility-first CSS framework</span>
             </li>
           </ul>
@@ -63,17 +76,15 @@
           </h2>
           <ul class="space-y-3">
             <li class="flex items-center space-x-3">
-              <span class="font-mono bg-blue-900/50 px-3 py-1.5 rounded-lg text-blue-200 shadow-sm">ESLint v9</span>
+              <LibBadge name="ESLint" version={eslintVersion} />
               <span class="text-blue-100/90">- Lintowanie kodu</span>
             </li>
             <li class="flex items-center space-x-3">
-              <span class="font-mono bg-blue-900/50 px-3 py-1.5 rounded-lg text-blue-200 shadow-sm">Prettier</span>
+              <LibBadge name="Prettier" version={prettierVersion} />
               <span class="text-blue-100/90">- Formatowanie kodu</span>
             </li>
             <li class="flex items-center space-x-3">
-              <span class="font-mono bg-blue-900/50 px-3 py-1.5 rounded-lg text-blue-200 shadow-sm"
-                >Husky i Lint-staged</span
-              >
+              <LibBadge name="Husky i Lint-staged" />
               <span class="text-blue-100/90">- Automatyczna analiza kodu przed commitowaniem</span>
             </li>
           </ul>

@@ -1,0 +1,13 @@
+---
+interface Props {
+  name: string;
+  version?: string;
+}
+
+const { name, version } = Astro.props;
+---
+
+<span class="inline-flex items-center gap-2 font-mono bg-blue-900/50 px-3 py-1.5 rounded-lg text-blue-200 shadow-sm">
+  {name}
+  {version && <span class="text-xs bg-purple-500/30 px-2 py-0.5 rounded-full text-purple-200">{version}</span>}
+</span>
