@@ -1,5 +1,7 @@
 # 10x Astro Starter
 
+![](./public/template.png)
+
 A modern, opinionated starter template for building fast, accessible, and AI-friendly web applications.
 
 ## Tech Stack
