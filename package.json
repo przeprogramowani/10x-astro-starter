@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
-    "ai:rules": "node scripts/sync-ai-rules.mjs"
+    "ai:rules": "bash scripts/sync-ai-rules.sh",
+    "openspec:init": "bash scripts/init-openspec.sh"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.7",
