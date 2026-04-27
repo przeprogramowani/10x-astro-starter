@@ -10,17 +10,11 @@ const { user } = Astro.locals;
       <>
         <span class="text-blue-100/70">{user.email}</span>
         <div class="flex items-center gap-3">
-          <a
-            href="/dashboard"
-            class="text-purple-300 hover:text-purple-100 hover:underline transition-colors"
-          >
+          <a href="/dashboard" class="text-purple-300 hover:text-purple-100 hover:underline transition-colors">
             Dashboard
           </a>
           <form method="POST" action="/api/auth/signout">
-            <button
-              type="submit"
-              class="text-purple-300 hover:text-purple-100 hover:underline transition-colors"
-            >
+            <button type="submit" class="text-purple-300 hover:text-purple-100 hover:underline transition-colors">
               Sign out
             </button>
           </form>
@@ -30,16 +24,10 @@ const { user } = Astro.locals;
       <>
         <span class="text-blue-100/70">Not signed in</span>
         <div class="flex gap-3">
-          <a
-            href="/auth/signin"
-            class="text-purple-300 hover:text-purple-100 hover:underline transition-colors"
-          >
+          <a href="/auth/signin" class="text-purple-300 hover:text-purple-100 hover:underline transition-colors">
             Sign in
           </a>
-          <a
-            href="/auth/signup"
-            class="text-purple-300 hover:text-purple-100 hover:underline transition-colors"
-          >
+          <a href="/auth/signup" class="text-purple-300 hover:text-purple-100 hover:underline transition-colors">
             Sign up
           </a>
         </div>
