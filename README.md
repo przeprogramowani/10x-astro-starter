@@ -6,10 +6,10 @@ A modern, opinionated starter template for building fast, accessible, and AI-fri
 
 ## Tech Stack
 
-- [Astro](https://astro.build/) v5.5.5 - Modern web framework for building fast, content-focused websites
-- [React](https://react.dev/) v19.0.0 - UI library for building interactive components
-- [TypeScript](https://www.typescriptlang.org/) v5 - Type-safe JavaScript
-- [Tailwind CSS](https://tailwindcss.com/) v4.0.17 - Utility-first CSS framework
+- [Astro](https://astro.build/) v6.1.9 - Modern web framework for building fast, content-focused websites
+- [React](https://react.dev/) v19.2.4 - UI library for building interactive components
+- [TypeScript](https://www.typescriptlang.org/) v5.9.3 - Type-safe JavaScript
+- [Tailwind CSS](https://tailwindcss.com/) v4.2.1 - Utility-first CSS framework
 - [Supabase](https://supabase.com/) - Authentication and backend-as-a-service
 
 ## Prerequisites
