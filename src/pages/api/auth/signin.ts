@@ -7,6 +7,9 @@ export const POST: APIRoute = async (context) => {
   const password = form.get("password") as string;
 
   const supabase = createClient(context.request.headers, context.cookies);
+  if (!supabase) {
+    return context.redirect(`/auth/signin?error=${encodeURIComponent("Supabase is not configured")}`);
+  }
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
