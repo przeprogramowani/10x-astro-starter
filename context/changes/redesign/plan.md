@@ -7,6 +7,7 @@ Replace the current tech-stack showcase homepage (`Welcome.astro`) with a simple
 ## Current State Analysis
 
 The homepage is a developer-facing tech-stack listing:
+
 - `src/pages/index.astro` renders `<Layout>` + `<Welcome />`
 - `Welcome.astro` imports `package.json` + `prettier/package.json` to extract version numbers, displays them via `LibBadge` components in three categorized sections
 - Background uses `from-indigo-900 via-purple-900 to-blue-900` gradient
@@ -25,6 +26,7 @@ The design system already supports what we need: Tailwind 4 with OKLCH tokens, g
 ## Desired End State
 
 A clean cosmic landing page at `/` with:
+
 - Deep space background (near-black with subtle blue/purple depth)
 - 2-3 static glowing orbs as cosmic decoration (blurred, positioned absolutely)
 - CSS-based star-like dots in the background
@@ -69,6 +71,7 @@ Rewrite `Welcome.astro` with a deep space background, static cosmic decorations,
 **Intent**: Replace the entire component content. Remove all package.json imports, version extraction logic, and LibBadge usage. Build a new layout with: (a) a deep space background replacing the current lighter gradient, (b) 2-3 absolutely-positioned blurred divs as glowing cosmic orbs, (c) a CSS `background-image` with multiple `radial-gradient` stops to create static star-like dots, (d) a centered hero section with a large gradient-text heading, a subtitle, and two CTA links (Sign In → `/auth/signin`, Sign Up → `/auth/signup`), (e) the existing `Topbar` component preserved at the top.
 
 **Contract**:
+
 - Component imports: only `Topbar` from `@/components/Topbar.astro` (remove `LibBadge`, `pkg`, `prettierPkg`, and all `ver()` logic)
 - Outer container: full-screen (`min-h-screen`), dark background — use a deeper color than current `indigo-900`, something closer to a space-black base (e.g., `bg-[#0a0e1a]` or a very dark gradient `from-[#0a0e1a] via-[#0f1529] to-[#0a0e1a]`)
 - Cosmic orbs: 2-3 `<div>` elements with `absolute`, `rounded-full`, large dimensions (200-400px), `blur-3xl` or `blur-[100px]`, semi-transparent purple/blue fills (`bg-purple-500/20`, `bg-blue-500/15`), `pointer-events-none`, positioned at different spots on the page
@@ -113,6 +116,7 @@ Add 2-3 feature cards below the hero section highlighting the starter's key capa
 **Intent**: Add a section below the hero with 2-3 glassmorphic cards, each highlighting a key capability of the starter: (1) Authentication Ready — built-in Supabase auth, (2) Modern Stack — Astro 5, React 19, Tailwind 4, TypeScript, (3) Developer Experience — ESLint, Prettier, pre-commit hooks. Each card should have an inline SVG icon, a title, and a short description.
 
 **Contract**:
+
 - Cards container: `max-w-4xl mx-auto`, responsive grid (`grid grid-cols-1 sm:grid-cols-3 gap-6`)
 - Each card: follows existing glassmorphism pattern (`backdrop-blur-xl bg-white/5 border border-white/10 rounded-xl p-6`)
 - Icons: inline `<svg>` elements (not lucide-react — avoid React hydration for static content), ~24x24px, `text-purple-300` stroke color
@@ -193,29 +197,29 @@ Add 2-3 feature cards below the hero section highlighting the starter's key capa
 
 #### Automated
 
-- [x] 1.1 Build succeeds: `npm run build`
-- [x] 1.2 Lint passes: `npm run lint`
-- [x] 1.3 Dev server starts without errors: `npm run dev`
+- [x] 1.1 Build succeeds: `npm run build` — fb19dcb
+- [x] 1.2 Lint passes: `npm run lint` — fb19dcb
+- [x] 1.3 Dev server starts without errors: `npm run dev` — fb19dcb
 
 #### Manual
 
-- [ ] 1.4 Homepage shows deep space background with cosmic orbs and star dots
-- [ ] 1.5 Hero heading is large, bold, gradient text, reads well in English
-- [ ] 1.6 Two CTA buttons visible and link correctly to auth pages
-- [ ] 1.7 Topbar displays correctly in both auth states
-- [ ] 1.8 No overflow issues on desktop, looks good on mobile (375px)
+- [x] 1.4 Homepage shows deep space background with cosmic orbs and star dots
+- [x] 1.5 Hero heading is large, bold, gradient text, reads well in English
+- [x] 1.6 Two CTA buttons visible and link correctly to auth pages
+- [x] 1.7 Topbar displays correctly in both auth states
+- [x] 1.8 No overflow issues on desktop, looks good on mobile (375px)
 
 ### Phase 2: Feature cards + cleanup
 
 #### Automated
 
-- [ ] 2.1 Build succeeds: `npm run build`
-- [ ] 2.2 Lint passes: `npm run lint`
-- [ ] 2.3 No TypeScript errors: `npx tsc --noEmit`
+- [x] 2.1 Build succeeds: `npm run build`
+- [x] 2.2 Lint passes: `npm run lint`
+- [x] 2.3 No TypeScript errors: `npx tsc --noEmit`
 
 #### Manual
 
-- [ ] 2.4 Three feature cards visible below hero with icons, titles, descriptions
-- [ ] 2.5 Cards display 3-column on desktop, single column on mobile
-- [ ] 2.6 No visual regression on hero section from Phase 1
-- [ ] 2.7 Auth flow still works end-to-end
+- [x] 2.4 Three feature cards visible below hero with icons, titles, descriptions
+- [x] 2.5 Cards display 3-column on desktop, single column on mobile
+- [x] 2.6 No visual regression on hero section from Phase 1
+- [x] 2.7 Auth flow still works end-to-end
