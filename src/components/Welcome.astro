@@ -1,5 +1,9 @@
 ---
 import Topbar from "@/components/Topbar.astro";
+import pkg from "../../package.json";
+
+const ver = (range: string) => range.replace(/^[\^~>=<\s]+/, "");
+const prettierVersion = ver(pkg.devDependencies.prettier);
 ---
 
 <div class="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-[#0a0e1a] via-[#0f1529] to-[#0a0e1a]">
@@ -37,6 +41,7 @@ import Topbar from "@/components/Topbar.astro";
       <p class="mb-10 max-w-2xl text-lg text-blue-100/70 sm:text-xl">
         A production-ready starter with authentication, modern tooling, and a cosmic developer experience.
       </p>
+      <p class="mb-10 text-sm text-blue-100/50">Prettier v{prettierVersion}</p>
       <div class="flex flex-col gap-4 sm:flex-row">
         <a
           href="/auth/signin"
