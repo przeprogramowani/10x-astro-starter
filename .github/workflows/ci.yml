@@ -17,7 +17,38 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
+      - run: npx astro check
       - run: npm run build
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - run: npm ci
+      - name: Start local Supabase
+        run: |
+          supabase start -x studio,imgproxy,mailpit,edge-runtime,logflare,vector,realtime,storage-api,postgres-meta,supavisor
+          supabase status -o env | grep -E '^(API_URL|ANON_KEY)=' > supabase.env
+      - name: Configure secrets for build and preview
+        run: |
+          source supabase.env
+          printf 'SUPABASE_URL=%s\nSUPABASE_KEY=%s\n' "$API_URL" "$ANON_KEY" > .env
+          cp .env .dev.vars
+      - run: npm run build
+      - name: Run smoke test against production preview
+        run: |
+          npm run preview -- --port 4321 &
+          for i in $(seq 1 60); do curl -sf -o /dev/null http://localhost:4321/ && break; sleep 1; done
+          BASE_URL=http://localhost:4321 npm run smoke
+      - if: always()
+        run: supabase stop --no-backup

@@ -6,9 +6,9 @@ A modern, opinionated starter template for building fast, accessible web applica
 
 ## Tech Stack
 
-- [Astro](https://astro.build/) v6 - Modern web framework with server-first rendering
+- [Astro](https://astro.build/) v7 - Modern web framework with server-first rendering
 - [React](https://react.dev/) v19 - UI library for interactive components
-- [TypeScript](https://www.typescriptlang.org/) v5 - Type-safe JavaScript
+- [TypeScript](https://www.typescriptlang.org/) v6 - Type-safe JavaScript
 - [Tailwind CSS](https://tailwindcss.com/) v4 - Utility-first CSS framework
 - [Supabase](https://supabase.com/) - Authentication and backend-as-a-service
 - [Cloudflare Workers](https://workers.cloudflare.com/) - Edge deployment runtime
@@ -55,6 +55,7 @@ npm run dev
 - `npm run lint` - Run ESLint with type-checked rules
 - `npm run lint:fix` - Auto-fix ESLint issues
 - `npm run format` - Run Prettier
+- `npm run smoke` - Smoke test the auth flow against a running server (`BASE_URL`, defaults to `http://localhost:4321`)
 
 ## Project Structure
 
@@ -166,9 +167,25 @@ npx wrangler deploy
 
 Set `SUPABASE_URL` and `SUPABASE_KEY` as secrets in your Cloudflare dashboard or via `npx wrangler secret put`.
 
+## Smoke test
+
+`scripts/smoke.mjs` is a dependency-free Node script that walks the whole auth flow (sign-up, sign-in, protected page, sign-out) over HTTP. Run it against the dev server or the production preview after dependency upgrades:
+
+```bash
+npm run dev            # or: npm run build && npm run preview
+BASE_URL=http://localhost:4321 npm run smoke
+```
+
+It needs a reachable Supabase instance (local or cloud) with email confirmation disabled.
+
+> **Note:** this script exists primarily to guard the development of the starter itself — it is a fast sanity check that dependency upgrades did not break the build, the Cloudflare adapter or the Supabase auth flow. It is **not** a substitute for a real test suite. Once you build your own product on top of this starter, add proper tests (unit, integration, end-to-end) suited to your application.
+
 ## CI
 
-GitHub Actions runs lint + build on every push and PR to `master`. Configure `SUPABASE_URL` and `SUPABASE_KEY` as repository secrets in GitHub for the build step.
+GitHub Actions runs two jobs on every push and PR to `master`:
+
+- **ci** — lint, `astro check` and build. Configure `SUPABASE_URL` and `SUPABASE_KEY` as repository secrets for the build step.
+- **smoke** — starts a local Supabase via the Supabase CLI, builds, serves the production preview on the Cloudflare runtime and runs `npm run smoke` against it. No secrets required.
 
 ## License
 

@@ -19,22 +19,20 @@ const { title = "10x Astro Starter" } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
-    {
-      missingConfigs.map((cfg) => (
-        <Banner variant="error">
-          <strong>Uwaga:</strong> {cfg.message}
-          {cfg.docsUrl && (
-            <>
-              {" "}
-              <a href={cfg.docsUrl} target="_blank" rel="noopener noreferrer">
-                {cfg.docsLabel ?? "Dokumentacja"}
-              </a>
-              .
-            </>
-          )}
-        </Banner>
-      ))
-    }
+    {missingConfigs.map((cfg) => (
+      <Banner variant="error">
+        <strong>Uwaga:</strong> {cfg.message}
+        {cfg.docsUrl && (
+          <>
+            {" "}
+            <a href={cfg.docsUrl} target="_blank" rel="noopener noreferrer">
+              {cfg.docsLabel ?? "Dokumentacja"}
+            </a>
+            .
+          </>
+        )}
+      </Banner>
+    ))}
     <slot />
   </body>
 </html>

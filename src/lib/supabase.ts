@@ -9,10 +9,7 @@ export function createClient(requestHeaders: Headers, cookies: AstroCookies) {
   return createServerClient(SUPABASE_URL, SUPABASE_KEY, {
     cookies: {
       getAll() {
-        return parseCookieHeader(requestHeaders.get("Cookie") ?? "").map(({ name, value }) => ({
-          name,
-          value: value ?? "",
-        }));
+        return parseCookieHeader(requestHeaders.get("Cookie") ?? "");
       },
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value, options }) => {
